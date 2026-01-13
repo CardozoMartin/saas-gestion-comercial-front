@@ -27,9 +27,6 @@ export const useAuth = () => {
 
       // Guardar sesión en el store
       setSession(data.user, data.token);
-
-      // Redirigir al dashboard
-      navigate("/dashboard", { replace: true });
     },
     onError: (error) => {
       console.error("Login failed:", error);

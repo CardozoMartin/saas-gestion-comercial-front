@@ -18,7 +18,7 @@ const App = () => {
         {/* Rutas privadas */}
         <Route element={<RoutesPrivate />}>
           <Route path="/dashboard" element={<SalesDashboard />} />
-          {/* Agrega más rutas privadas aquí */}
+          
         </Route>
 
         {/* Ruta 404 */}

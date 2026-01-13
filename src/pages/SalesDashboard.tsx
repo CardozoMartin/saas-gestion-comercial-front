@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import FormCategory from "../components/Category/FormCategory";
 
 const SalesDashboard = () => {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -364,6 +365,7 @@ const SalesDashboard = () => {
             <p className="text-gray-600">
               Organiza tus productos en categorías para facilitar la búsqueda.
             </p>
+            <FormCategory />
           </div>
         );
 

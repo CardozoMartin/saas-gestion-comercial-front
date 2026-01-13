@@ -1,7 +1,8 @@
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface LoginFormData {
   email: string;
@@ -11,6 +12,15 @@ interface LoginFormData {
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { postLogin, isPending, isError, isSuccess, error, data } = useAuth();
+  const navigate = useNavigate();
+
+  // Navegar al dashboard cuando el login sea exitoso
+  useEffect(() => {
+    if (isSuccess) {
+      console.log("Login successful, navigating to dashboard");
+      navigate("/dashboard");
+    }
+  }, [isSuccess, navigate]);
 
   //RHF ------------------------------------
   const {
@@ -26,9 +36,9 @@ const LoginForm = () => {
   });
 
   const handleLogin = (data: LoginFormData) => {
-   console.log(data);
+    console.log(data);
     // Lógica de autenticación aquí
-    postLogin({ email: data.email, password: data.password });
+    postLogin(data);
   };
   return (
     <form onSubmit={handleLoginRHF(handleLogin)} className="space-y-4">
