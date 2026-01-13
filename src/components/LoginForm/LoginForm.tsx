@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -112,7 +112,7 @@ const LoginForm = () => {
         type="submit"
         className="w-full bg-blue-600 text-white py-2.5 rounded-md font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
       >
-        Iniciar Sesión
+        {isPending ? "Iniciando sesión..." : "Iniciar Sesión"}
       </button>
     </form>
   );

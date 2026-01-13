@@ -4,6 +4,17 @@ import RoutesPublic from "./routes/RoutesPublic";
 import RoutesPrivate from "./routes/RoutesPrivate";
 import LoginPage from "./pages/LoginPage";
 import SalesDashboard from "./pages/SalesDashboard";
+import Producto from "./components/Producto/Producto";
+import FormProducto from "./components/Producto/FormProducto";
+import DashboardLayout from "./pages/DashboardLayaout";
+import DashboardHome from "./pages/DashboardHome";
+import ProductosPage from "./pages/ProductosPage";
+import VentasPage from "./pages/VentasPage";
+import ClientesPage from "./pages/ClientesPage";
+import PedidosPage from "./pages/PedidosPage";
+import CategoriasPage from "./pages/CategoriasPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import ConfiguracionPage from "./pages/ConfiguracionPage";
 
 const App = () => {
   return (
@@ -17,8 +28,17 @@ const App = () => {
 
         {/* Rutas privadas */}
         <Route element={<RoutesPrivate />}>
-          <Route path="/dashboard" element={<SalesDashboard />} />
-          
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path="productos" element={<ProductosPage />} />
+            <Route path="productos/agregar" element={<FormProducto />} /> 
+            <Route path="ventas" element={<VentasPage />} />
+            <Route path="clientes" element={<ClientesPage />} />
+            <Route path="pedidos" element={<PedidosPage />} />
+            <Route path="categorias" element={<CategoriasPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="configuracion" element={<ConfiguracionPage />} />
+          </Route>
         </Route>
 
         {/* Ruta 404 */}

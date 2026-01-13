@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { useCategory } from '../../hooks/useCategory';
 import type { Category } from '../../types/category.types';
 
+
 export default function FormCategory() {
 
     const { postCategory,
@@ -95,6 +96,8 @@ export default function FormCategory() {
                     Limpiar
                 </button>
             </div>
+
+            
         </div>
     );
 }
