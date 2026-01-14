@@ -15,6 +15,7 @@ import PedidosPage from "./pages/PedidosPage";
 import CategoriasPage from "./pages/CategoriasPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
+import UnitsPage from "./pages/UnitsPage";
 
 const App = () => {
   return (
@@ -38,6 +39,7 @@ const App = () => {
             <Route path="categorias" element={<CategoriasPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="configuracion" element={<ConfiguracionPage />} />
+            <Route path="unidades" element={<UnitsPage />} />
           </Route>
         </Route>
 

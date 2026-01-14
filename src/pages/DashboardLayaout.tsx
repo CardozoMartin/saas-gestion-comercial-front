@@ -21,6 +21,7 @@ import {
   Tag,
   Menu,
   X,
+  Ruler,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -73,6 +74,12 @@ const DashboardLayout = () => {
       name: "Configuración",
       icon: Settings,
       path: "/dashboard/configuracion",
+    },
+    {
+      id: "units",
+      name: "Unidades",
+      icon: Ruler,
+      path: "/dashboard/unidades",
     },
   ];
 

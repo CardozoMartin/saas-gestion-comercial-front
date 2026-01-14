@@ -72,9 +72,19 @@ const TableProduct = ({ Productos }) => {
           </th>
         </tr>
       </thead>
-      {Productos.map((product, index) => (
-        <tbody key={product.id}>
+      <tbody>
+        {Productos.length === 0 && (
           <tr>
+            <td
+              colSpan="7"
+              className="px-3 py-3 text-center text-gray-800/80 font-medium"
+            >
+              No cargaste ningun producto aun.
+            </td>
+          </tr>
+        )}
+        {Productos.map((product, index) => (
+          <tr key={product.id}>
             <td className="px-3 py-3 text-gray-800/80 font-medium">
               {index + 1}
             </td>
@@ -149,8 +159,8 @@ const TableProduct = ({ Productos }) => {
               </div>
             </td>
           </tr>
-        </tbody>
-      ))}
+        ))}
+      </tbody>
     </table>
   );
 };

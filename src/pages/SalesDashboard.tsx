@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import FormCategory from "../components/Category/FormCategory";
 import Producto from "../components/Producto/Producto";
+import UnitsPage from "../pages/UnitsPage";
 
 const SalesDashboard = () => {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -31,6 +32,7 @@ const SalesDashboard = () => {
     { id: "categories", name: "Categorías", icon: Tag },
     { id: "analytics", name: "Análisis", icon: BarChart3 },
     { id: "settings", name: "Configuración", icon: Settings },
+    { id: "units", name: "Unidades", icon: DollarSign },
   ];
 
   const salesData = [
@@ -302,9 +304,7 @@ const SalesDashboard = () => {
         );
 
       case "products":
-        return (
-          <Producto />
-        );
+        return <Producto />;
 
       case "sales":
         return (
@@ -368,6 +368,8 @@ const SalesDashboard = () => {
             </p>
           </div>
         );
+      case "units":
+        return <UnitsPage />;
 
       case "settings":
         return (
@@ -395,11 +397,11 @@ const SalesDashboard = () => {
       <aside
         className={`${
           sidebarOpen ? "w-64" : "w-0"
-        } bg-white border-r border-gray-500/30 transition-all duration-300 overflow-hidden`}
+        } bg-white border-r border-gray-200 transition-all duration-300 overflow-hidden flex-shrink-0`}
       >
-        <div className="p-6 border-b border-gray-500/30">
-          <h1 className="text-xl font-bold text-gray-800">Sistema Ventas</h1>
-          <p className="text-xs text-gray-600 mt-1">Panel de Control</p>
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-800">Sistema Ventas</h1>
+          <p className="text-sm text-gray-500 mt-1">Panel de Control</p>
         </div>
 
         <nav className="p-4">
@@ -416,8 +418,8 @@ const SalesDashboard = () => {
                         : "text-gray-700 hover:bg-gray-500/10"
                     }`}
                   >
-                    <Icon size={18} strokeWidth={2} />
-                    <span>{item.name}</span>
+                    <Icon className="w-5 h-5" />
+                    {item.name}
                   </button>
                 </li>
               );
@@ -425,12 +427,10 @@ const SalesDashboard = () => {
           </ul>
         </nav>
 
-        <div className="absolute bottom-0 w-64 p-4 border-t border-gray-500/30">
-          <button
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-red-600/80 hover:bg-red-600/10 transition"
-          >
-            <LogOut size={18} />
-            <span>Cerrar Sesión</span>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-500/10 transition">
+            <LogOut className="w-5 h-5" />
+            Cerrar Sesión
           </button>
         </div>
       </aside>
