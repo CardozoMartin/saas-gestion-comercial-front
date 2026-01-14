@@ -14,8 +14,12 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useSession } from "../store/useSession";
 
 const DashboardHome = () => {
+
+  const { token } = useSession();
+  console.log("Token from session store:", token);
   const salesData = [
     { month: "Ene", amount: 45000 },
     { month: "Feb", amount: 52000 },

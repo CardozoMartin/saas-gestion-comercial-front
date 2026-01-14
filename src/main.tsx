@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'sonner'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +28,7 @@ createRoot(rootElement).render(
       <App />
       {/* Solo en desarrollo */}
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      <Toaster richColors={true} position="bottom-right" />
     </QueryClientProvider>
   </StrictMode>,
 )

@@ -20,6 +20,8 @@ export default function FormCategory() {
         }
     });
 
+    
+
     const onSubmit = (data : Category) => {
         console.log('Categoría guardada:', data);
         postCategory(data);

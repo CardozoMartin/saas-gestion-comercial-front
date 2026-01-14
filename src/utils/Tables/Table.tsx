@@ -53,7 +53,7 @@ export default function StyledTable() {
   };
 
   return (
-    <div className="w-full max-w-4xl p-4 bg-white border border-gray-500/30 rounded-md">
+    <div className="w-full  p-4 bg-white border border-gray-500/30 rounded-md">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

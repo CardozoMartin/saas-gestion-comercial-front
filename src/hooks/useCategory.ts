@@ -9,6 +9,8 @@ export const useCategory = () => {
         queryFn: getCategoriesFn
     })
 
+    
+
     //useMutatio para crear una categoria
     const { mutate: postCategory, isPending: isPostingCategory, isError: isPostCategoryError } = useMutation({
         mutationFn: postCategoryFn,

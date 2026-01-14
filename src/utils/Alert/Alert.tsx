@@ -1,5 +1,5 @@
-import  { useState } from "react";
-import { AlertCircle, CheckCircle, X } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle } from "lucide-react";
 
 interface AlertProps {
   title: string;
@@ -25,6 +25,26 @@ const Alert = ({
   const [isCancelled, setIsCancelled] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Definir las clases de color de forma estática
+  const colorClasses = {
+    red: {
+      bg: 'bg-red-100',
+      button: 'bg-red-600 hover:bg-red-700',
+    },
+    blue: {
+      bg: 'bg-blue-100',
+      button: 'bg-blue-600 hover:bg-blue-700',
+    },
+    green: {
+      bg: 'bg-green-100',
+      button: 'bg-green-600 hover:bg-green-700',
+    },
+    yellow: {
+      bg: 'bg-yellow-100',
+      button: 'bg-yellow-600 hover:bg-yellow-700',
+    }
+  };
 
   const handleCancel = () => {
     setIsCancelled(true);
@@ -72,9 +92,7 @@ const Alert = ({
   // Modal de confirmación
   return (
     <div className="flex flex-col items-center bg-white shadow-md rounded-xl py-6 px-5 md:w-[460px] w-[370px] border border-gray-200">
-      <div
-        className={`flex items-center justify-center p-4 bg-${color}-100 rounded-full`}
-      >
+      <div className={`flex items-center justify-center p-4 ${colorClasses[color].bg} rounded-full`}>
         {icon}
       </div>
       <h2 className="text-gray-900 font-semibold mt-4 text-xl">{title}</h2>
@@ -92,7 +110,7 @@ const Alert = ({
           type="button"
           onClick={handleConfirm}
           disabled={isLoading}
-          className={`w-full md:w-36 h-10 rounded-md text-white bg-${color}-600 font-medium text-sm hover:bg-${color}-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`w-full md:w-36 h-10 rounded-md text-white ${colorClasses[color].button} font-medium text-sm active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {isLoading ? "Procesando..." : confirmText}
         </button>
