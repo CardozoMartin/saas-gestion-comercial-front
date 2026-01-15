@@ -1,6 +1,6 @@
 // hooks/useProduct.ts - ACTUALIZADO
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { getProductsFn, postProductFn, putProductFn } from "../api/products/apiProducts"
+import { getProductAllFn, getProductsFn, postProductFn, putProductFn } from "../api/products/apiProducts"
 import { useState } from "react"
 
 interface ProductsParams {
@@ -20,6 +20,14 @@ export const useProduct = (params?: ProductsParams) => {
         queryKey: ['products', params],
         queryFn: () => getProductsFn(params)
     })
+
+   const { data: allProductsData, isLoading: isLoadingAllProducts, isError: isErrorAllProducts } = useQuery({
+    queryKey: ['allProducts'],
+    queryFn: () => getProductAllFn(),
+    staleTime: 5 * 60 * 1000, // Los datos se consideran frescos por 5 minutos
+    cacheTime: 10 * 60 * 1000, // Los datos permanecen en caché por 10 minutos
+    refetchOnWindowFocus: false, // No recargar al enfocar la ventana
+})
 
     // Verificar si la respuesta es un array (sin paginación) o un objeto (con paginación)
     const isArrayResponse = Array.isArray(data);
@@ -74,6 +82,9 @@ export const useProduct = (params?: ProductsParams) => {
         postProductError,
         putProduct,
         isPutProductError,
-        isPutProductPending
+        isPutProductPending,
+        allProductsData,
+        isLoadingAllProducts,
+        isErrorAllProducts
     }
 }

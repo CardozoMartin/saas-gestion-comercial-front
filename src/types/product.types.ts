@@ -14,3 +14,12 @@ export interface Product {
 export interface ProductUpdate extends Product {
     id: number;
 }
+
+interface ProductoDTO{
+    id: number;
+    codigo: string;
+    nombre: string;
+    precioVenta: number;
+    stockActual: number;
+    categoriaNombre?: string;
+}

@@ -31,6 +31,14 @@ export const getProductsFn = async (params?: ProductsParams) => {
     }
 };
 
+export const getProductAllFn = async ()=>{
+    try {
+        const response = await api.get("/productos/allproducts/");
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
 export const postProductFn = async (newProduct: Product) => {
     try {
         const response = await api.post("/productos/", newProduct);

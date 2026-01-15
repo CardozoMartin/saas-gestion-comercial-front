@@ -16,6 +16,7 @@ import CategoriasPage from "./pages/CategoriasPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import UnitsPage from "./pages/UnitsPage";
+import PointSale from "./pages/PointSale";
 
 const App = () => {
   return (
@@ -40,6 +41,8 @@ const App = () => {
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="configuracion" element={<ConfiguracionPage />} />
             <Route path="unidades" element={<UnitsPage />} />
+            <Route path="punto-venta" element={<PointSale />} />
+
           </Route>
         </Route>
 

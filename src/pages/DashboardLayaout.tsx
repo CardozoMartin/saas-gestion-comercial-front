@@ -22,20 +22,30 @@ import {
   Menu,
   X,
   Ruler,
+  CreditCard,
 } from "lucide-react";
 import { useState } from "react";
-import { useSession } from "../store/useSession";
 
 // Layout del Dashboard
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-  const {user} = useSession();
-  console.log("Usuario en DashboardLayout:", user);
+  
+  // Simulación de usuario - reemplaza con tu hook real
+  const user = {
+    nombre: "Admin Usuario",
+    email: "admin@ejemplo.com"
+  };
   
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: Home, path: "/dashboard" },
+    {
+      id: "pos",
+      name: "Punto de Venta",
+      icon: CreditCard,
+      path: "/dashboard/punto-venta",
+    },
     {
       id: "products",
       name: "Productos",
@@ -73,16 +83,16 @@ const DashboardLayout = () => {
       path: "/dashboard/analytics",
     },
     {
-      id: "settings",
-      name: "Configuración",
-      icon: Settings,
-      path: "/dashboard/configuracion",
-    },
-    {
       id: "units",
       name: "Unidades",
       icon: Ruler,
       path: "/dashboard/unidades",
+    },
+    {
+      id: "settings",
+      name: "Configuración",
+      icon: Settings,
+      path: "/dashboard/configuracion",
     },
   ];
 
