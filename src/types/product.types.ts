@@ -10,3 +10,7 @@ export interface Product {
     stockMinimo: number;
     cantidadInicial: number;
 }
+
+export interface ProductUpdate extends Product {
+    id: number;
+}

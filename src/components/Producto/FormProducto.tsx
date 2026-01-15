@@ -9,7 +9,6 @@ import {
   Tag,
   Ruler,
   ToggleLeft,
-  Calendar,
   Hash,
   CheckCircle,
 } from "lucide-react";
@@ -17,8 +16,9 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useCategory } from "../../hooks/useCategory";
 import { useProduct } from "../../hooks/useProduct";
-import { useSession } from "../../store/useSession";
 import { useProductEdite } from "../../store/useProductEdite";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 interface Producto {
   codigo: string;
@@ -30,31 +30,15 @@ interface Producto {
   unidadMedidaId: number;
   fraccionable: boolean;
   stockMinimo: number;
-  cantidadInicial: number;
+  cantidadInicial?: number;
 }
 
 const FormProducto = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const { productEdite } = useProductEdite();
-
-  //ahora vamos a cargar los datos del producto a editar si existe productEdite
-  useEffect(() => {
-    if (productEdite) {
-      reset({
-        codigo: productEdite.codigo || "",
-        nombre: productEdite.nombre || "",
-        descripcion: productEdite.descripcion || "",
-        categoriaId: productEdite.categoriaId || ("" as any),
-        precioCosto: productEdite.precioCosto || 0,
-        precioVenta: productEdite.precioVenta || 0,
-        unidadMedidaId: productEdite.unidadMedidaId || ("" as any),
-        fraccionable: productEdite.fraccionable || false,
-        stockMinimo: productEdite.stockMinimo || 0,
-        cantidadInicial: productEdite.cantidadInicial || 0,
-      });
-    }
-  }, [productEdite]);
+  const { productEdite, clearProductEdite } = useProductEdite();
+  const navigate = useNavigate();
+  console.log("Producto a editar:", productEdite);
 
   const {
     register,
@@ -78,41 +62,112 @@ const FormProducto = () => {
   });
 
   const { AllCategories, isLoading: loadingCategories } = useCategory();
-  const { postProduct, isPostingProduct, isPostProductError, postProductError } = useProduct();
+  const {
+    postProduct,
+    isPostingProduct,
+    isPostProductError,
+    postProductError,
+    putProduct,
+    isPutProductPending,
+    isPutProductError,
+  } = useProduct();
 
   const categorias = AllCategories || [];
 
-  const onSubmit = (data: Producto) => {
-    console.log("Datos a enviar:", data);
-    
-    // Convertir los IDs a números y asegurar el formato correcto
-    const productData: Producto = {
-      codigo: data.codigo,
-      nombre: data.nombre,
-      categoriaId: Number(data.categoriaId),
-      precioCosto: Number(data.precioCosto),
-      precioVenta: Number(data.precioVenta),
-      unidadMedidaId: Number(data.unidadMedidaId),
-      fraccionable: data.fraccionable,
-      stockMinimo: Number(data.stockMinimo),
-      cantidadInicial: Number(data.cantidadInicial),
-    };
-
-    // Solo incluir descripcion si tiene valor
-    if (data.descripcion && data.descripcion.trim() !== '') {
-      productData.descripcion = data.descripcion;
+  // Cargar datos del producto a editar
+  useEffect(() => {
+    if (productEdite) {
+      reset({
+        codigo: productEdite.codigo || "",
+        nombre: productEdite.nombre || "",
+        descripcion: productEdite.descripcion || "",
+        categoriaId: productEdite.categoria.id,
+        precioCosto: productEdite.precioCosto || 0,
+        precioVenta: productEdite.precioVenta || 0,
+        unidadMedidaId: productEdite.unidadMedidaId || ("" as any),
+        fraccionable: productEdite.fraccionable || false,
+        stockMinimo: productEdite.stockMinimo || 0,
+        cantidadInicial: productEdite.stockActual?.cantidad || 0,
+      });
     }
+  }, [productEdite, reset]);
 
-    console.log("Datos formateados:", productData);
+  const onSubmit = (data: Producto) => {
+    if (productEdite) {
+      const productData: any = {
+        codigo: data.codigo,
+        nombre: data.nombre,
+        categoriaId: Number(data.categoriaId),
+        precioCosto: Number(data.precioCosto),
+        precioVenta: Number(data.precioVenta),
+        unidadMedidaId: Number(data.unidadMedidaId),
+        fraccionable: data.fraccionable,
+        stockMinimo: Number(data.stockMinimo),
+      };
+      const cantidadOriginal = productEdite.stockActual?.cantidad || 0;
+      const cantidadFormulario = Number(data.cantidadInicial);
 
-    postProduct(productData, {
-      onSuccess: () => {
-        setShowSuccessMessage(true);
-        reset();
-        setImagePreview(null);
-        setTimeout(() => setShowSuccessMessage(false), 3000);
-      },
-    });
+      if (cantidadFormulario !== Number(cantidadOriginal)) {
+        productData.cantidadInicial = cantidadFormulario;
+      }
+
+      if (data.descripcion && data.descripcion.trim() !== "") {
+        productData.descripcion = data.descripcion;
+      }
+
+      Swal.fire({
+        title: "¿Estás seguro?",
+        text: "¡No podrás revertir esto!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, actualizarlo!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          putProduct(
+            { id: productEdite.id, ...productData },
+            {
+              onSuccess: () => {
+                setShowSuccessMessage(true);
+                reset();
+                setImagePreview(null);
+                setTimeout(() => setShowSuccessMessage(false), 3000);
+                navigate("/dashboard/productos");
+              },
+            }
+          );
+        }
+      });
+    } else {
+      const productData: Producto = {
+        codigo: data.codigo,
+        nombre: data.nombre,
+        categoriaId: Number(data.categoriaId),
+        precioCosto: Number(data.precioCosto),
+        precioVenta: Number(data.precioVenta),
+        unidadMedidaId: Number(data.unidadMedidaId),
+        fraccionable: data.fraccionable,
+        stockMinimo: Number(data.stockMinimo),
+        cantidadInicial: Number(data.cantidadInicial),
+      };
+
+      if (data.descripcion && data.descripcion.trim() !== "") {
+        productData.descripcion = data.descripcion;
+      }
+
+      console.log("Datos a enviar (creación):", productData);
+
+      postProduct(productData, {
+        onSuccess: () => {
+          setShowSuccessMessage(true);
+          reset();
+          setImagePreview(null);
+          setTimeout(() => setShowSuccessMessage(false), 3000);
+          navigate("/dashboard/productos");
+        },
+      });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +182,17 @@ const FormProducto = () => {
   };
 
   const fraccionable = watch("fraccionable");
+  const isLoading = isPostingProduct || isPutProductPending;
+
+  const handleCloseForm = () => {
+    if (productEdite) {
+      //si el producto existe lo quita de la ediccion y del estado de zustand
+      clearProductEdite();
+      navigate("/dashboard/productos");
+    } else {
+      navigate("/dashboard/productos");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -135,22 +201,24 @@ const FormProducto = () => {
         <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg z-50 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-600" />
           <span className="text-sm font-medium text-green-800">
-            Producto guardado exitosamente
+            Producto {productEdite ? "actualizado" : "guardado"} exitosamente
           </span>
         </div>
       )}
 
       {/* Mensaje de error */}
-      {isPostProductError && (
+      {(isPostProductError || isPutProductError) && (
         <div className="fixed top-4 right-4 bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-50 max-w-md">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-800">Error al guardar producto</p>
+              <p className="text-sm font-medium text-red-800">
+                Error al guardar producto
+              </p>
               <p className="text-xs text-red-600 mt-1">
-                {(postProductError as any)?.response?.data?.message || 
-                 (postProductError as any)?.message || 
-                 "Ocurrió un error inesperado"}
+                {(postProductError as any)?.response?.data?.message ||
+                  (postProductError as any)?.message ||
+                  "Ocurrió un error inesperado"}
               </p>
             </div>
           </div>
@@ -167,7 +235,10 @@ const FormProducto = () => {
               Completa la información del producto
             </p>
           </div>
-          <button className="p-2 text-gray-600/70 hover:text-gray-800 hover:bg-gray-500/10 rounded transition">
+          <button
+            className="p-2 text-gray-600/70 hover:text-gray-800 hover:bg-gray-500/10 rounded transition"
+            onClick={() => handleCloseForm()}
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -254,7 +325,8 @@ const FormProducto = () => {
                 <select
                   {...register("categoriaId", {
                     required: "Selecciona una categoría",
-                    validate: (value) => value > 0 || "Debes seleccionar una categoría válida"
+                    validate: (value) =>
+                      value > 0 || "Debes seleccionar una categoría válida",
                   })}
                   className={`w-full border rounded-md px-3 py-2 text-sm font-medium text-gray-800/80 focus:outline-none focus:ring-1 focus:ring-gray-400 transition ${
                     errors.categoriaId
@@ -288,7 +360,8 @@ const FormProducto = () => {
                 <select
                   {...register("unidadMedidaId", {
                     required: "Selecciona una unidad",
-                    validate: (value) => value > 0 || "Debes seleccionar una unidad válida"
+                    validate: (value) =>
+                      value > 0 || "Debes seleccionar una unidad válida",
                   })}
                   className={`w-full border rounded-md px-3 py-2 text-sm font-medium text-gray-800/80 focus:outline-none focus:ring-1 focus:ring-gray-400 transition ${
                     errors.unidadMedidaId
@@ -410,6 +483,41 @@ const FormProducto = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-800/80 mb-2">
+                  {productEdite ? "Stock Actual" : "Cantidad Inicial *"}
+                </label>
+                <input
+                  {...register("cantidadInicial", {
+                    required: !productEdite
+                      ? "La cantidad inicial es obligatoria"
+                      : false,
+                    min: { value: 0, message: "Debe ser mayor o igual a 0" },
+                  })}
+                  type="number"
+                  step="0.001"
+                  className={`w-full border rounded-md px-3 py-2 text-sm font-medium text-gray-800/80 focus:outline-none focus:ring-1 focus:ring-gray-400 transition ${
+                    errors.cantidadInicial
+                      ? "border-red-400/60 bg-red-50/30"
+                      : "border-gray-500/30 hover:border-gray-500/50"
+                  }`}
+                  placeholder="0"
+                />
+                {errors.cantidadInicial && (
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-500/80" />
+                    <span className="text-red-600/80 text-xs font-medium">
+                      {errors.cantidadInicial.message}
+                    </span>
+                  </div>
+                )}
+                {productEdite && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Modifica este valor solo si necesitas ajustar el stock
+                  </p>
+                )}
+              </div>
+
               <div className="flex items-end">
                 <label className="flex items-center gap-2.5 cursor-pointer bg-white border border-gray-500/30 hover:bg-gray-500/10 rounded-md px-3 py-2 w-full transition">
                   <input
@@ -485,11 +593,17 @@ const FormProducto = () => {
           <div className="flex gap-3 pt-4 border-t border-gray-300/70">
             <button
               type="submit"
-              disabled={isPostingProduct}
+              disabled={isLoading}
               className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              {isPostingProduct ? "Guardando..." : "Guardar Producto"}
+              {productEdite
+                ? isPutProductPending
+                  ? "Actualizando..."
+                  : "Actualizar Producto"
+                : isPostingProduct
+                ? "Guardando..."
+                : "Guardar Producto"}
             </button>
             <button
               type="button"
@@ -499,7 +613,7 @@ const FormProducto = () => {
               }}
               className="px-5 py-2.5 border border-gray-500/30 text-gray-800/80 text-sm font-medium rounded-md hover:bg-gray-500/10 transition"
             >
-              Cancelar
+              {productEdite ? "Cancelar Edicion" : "Cancelar"}
             </button>
           </div>
         </form>

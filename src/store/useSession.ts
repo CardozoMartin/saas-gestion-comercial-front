@@ -27,6 +27,7 @@ const initializeAuth = (): AuthState => {
 
   try {
     const decoded = jwtDecode<DecodedToken>(token);
+    console.log("Decoded token:", decoded);
 
     // Verificar si el token ha expirado
     if (!decoded.exp || isTokenExpired(decoded.exp)) {
@@ -42,8 +43,9 @@ const initializeAuth = (): AuthState => {
     // Token válido
     return {
       user: {
-        userId: decoded.userId,
+        userId: decoded.id,
         email: decoded.email,
+        nombre: decoded.nombre
       },
       isLoggedIn: true,
       token,

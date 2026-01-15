@@ -24,13 +24,16 @@ import {
   Ruler,
 } from "lucide-react";
 import { useState } from "react";
+import { useSession } from "../store/useSession";
 
 // Layout del Dashboard
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-
+  const {user} = useSession();
+  console.log("Usuario en DashboardLayout:", user);
+  
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: Home, path: "/dashboard" },
     {
@@ -84,24 +87,35 @@ const DashboardLayout = () => {
   ];
 
   const handleLogout = () => {
-    // Aquí implementarías tu lógica de logout real
     navigate("/login");
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      {/* Sidebar - Expandido o Compacto */}
       <aside
         className={`${
-          sidebarOpen ? "w-64" : "w-0"
-        } bg-white border-r border-gray-500/30 transition-all duration-300 overflow-hidden`}
+          sidebarOpen ? "w-64" : "w-20"
+        } bg-white border-r border-gray-500/30 transition-all duration-300 flex flex-col`}
       >
-        <div className="p-6 border-b border-gray-500/30">
-          <h1 className="text-xl font-bold text-gray-800">Sistema Ventas</h1>
-          <p className="text-xs text-gray-600 mt-1">Panel de Control</p>
+        {/* Header del Sidebar */}
+        <div className={`p-6 border-b border-gray-500/30 flex-shrink-0 ${!sidebarOpen && 'px-4'}`}>
+          {sidebarOpen ? (
+            <>
+              <h1 className="text-xl font-bold text-gray-800">Sistema Ventas</h1>
+              <p className="text-xs text-gray-600 mt-1">Panel de Control</p>
+            </>
+          ) : (
+            <div className="flex justify-center">
+              <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-white font-bold">
+                SV
+              </div>
+            </div>
+          )}
         </div>
 
-        <nav className="p-4">
+        {/* Navegación */}
+        <nav className="p-4 flex-1 overflow-y-auto">
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -113,14 +127,17 @@ const DashboardLayout = () => {
                 <li key={item.id}>
                   <button
                     onClick={() => navigate(item.path)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition ${
+                    className={`w-full flex items-center ${
+                      sidebarOpen ? 'gap-3 px-3' : 'justify-center px-0'
+                    } py-2.5 rounded-md text-sm font-medium transition ${
                       isActive
                         ? "bg-gray-500/20 text-gray-800"
                         : "text-gray-700 hover:bg-gray-500/10"
                     }`}
+                    title={!sidebarOpen ? item.name : undefined}
                   >
                     <Icon size={18} strokeWidth={2} />
-                    <span>{item.name}</span>
+                    {sidebarOpen && <span>{item.name}</span>}
                   </button>
                 </li>
               );
@@ -128,21 +145,25 @@ const DashboardLayout = () => {
           </ul>
         </nav>
 
-        <div className="absolute bottom-0 w-64 p-4 border-t border-gray-500/30">
+        {/* Botón de logout */}
+        <div className="p-4 border-t border-gray-500/30 flex-shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-red-600/80 hover:bg-red-600/10 transition"
+            className={`w-full flex items-center ${
+              sidebarOpen ? 'gap-3 px-3' : 'justify-center px-0'
+            } py-2.5 rounded-md text-sm font-medium text-red-600/80 hover:bg-red-600/10 transition`}
+            title={!sidebarOpen ? "Cerrar Sesión" : undefined}
           >
             <LogOut size={18} />
-            <span>Cerrar Sesión</span>
+            {sidebarOpen && <span>Cerrar Sesión</span>}
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b border-gray-500/30 px-6 py-4 sticky top-0 z-10">
+        <header className="bg-white border-b border-gray-500/30 px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -154,23 +175,24 @@ const DashboardLayout = () => {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-800">
-                  Admin Usuario
+                  {user?.nombre || "Usuario"}
                 </p>
-                <p className="text-xs text-gray-600">admin@ventas.com</p>
+                <p className="text-xs text-gray-600">{user?.email || ""}</p>
               </div>
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                A
+                {user?.nombre?.charAt(0).toUpperCase() || "A"}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Content - Aquí se renderizan las rutas hijas */}
-        <div className="p-6">
+        {/* Content - SOLO ESTA ÁREA tiene scroll */}
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
+
 export default DashboardLayout;

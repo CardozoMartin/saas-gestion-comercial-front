@@ -1,6 +1,8 @@
 import React from 'react'
 
 const TableCategory = ({ AllCategories }: any) => {
+
+  const Categorias = AllCategories || [];
   return (
      <table className="w-full text-sm">
               <thead>
@@ -19,8 +21,21 @@ const TableCategory = ({ AllCategories }: any) => {
                   </th>
                 </tr>
               </thead>
-              {AllCategories.map((category, index) => (
+              {Categorias.length === 0 && (
                 <tbody>
+
+                <tr className="border-b border-gray-300/70">
+                  <td colSpan={4} className="text-center py-4 text-gray-600">
+                    No hay categorías disponibles.
+                  </td>
+                </tr>
+                </tbody>
+              )}
+                <tbody>
+              {Categorias.map((category, index) => (
+                  <tr key={category.id} className="border-b border-gray-300/70 hover:bg-gray-100/50">
+
+                  
                   <td className="px-3 py-3 text-gray-800/80 font-medium">
                     {index}
                   </td>
@@ -70,8 +85,9 @@ const TableCategory = ({ AllCategories }: any) => {
                       </button>
                     </div>
                   </td>
-                </tbody>
+                  </tr>
               ))}
+                </tbody>
             </table>
   )
 }
