@@ -156,7 +156,7 @@ const FormProducto = () => {
         productData.descripcion = data.descripcion;
       }
 
-      console.log("Datos a enviar (creación):", productData);
+      
 
       postProduct(productData, {
         onSuccess: () => {

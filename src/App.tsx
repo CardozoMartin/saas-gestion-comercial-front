@@ -17,6 +17,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import UnitsPage from "./pages/UnitsPage";
 import PointSale from "./pages/PointSale";
+import AccounteDetails from "./components/Cliente/AccounteDetails";
 
 const App = () => {
   return (
@@ -42,6 +43,8 @@ const App = () => {
             <Route path="configuracion" element={<ConfiguracionPage />} />
             <Route path="unidades" element={<UnitsPage />} />
             <Route path="punto-venta" element={<PointSale />} />
+            <Route path="account-details" element={<AccounteDetails />} />
+
 
           </Route>
         </Route>

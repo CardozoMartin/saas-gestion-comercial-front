@@ -5,7 +5,7 @@ import { useCliente } from "../../hooks/useCliente";
 const AccountDetails = () => {
   const location = useLocation();
   const { clienteId } = location.state || {};
-  const { useGetCuentaCorrienteCliente } = useCliente();
+const { useGetCuentaCorrienteCliente } = useCliente();
   const { data: cuentaCorriente, isLoading, isError } = useGetCuentaCorrienteCliente(clienteId);
 
   if (isLoading) {

@@ -1,7 +1,6 @@
-// hooks/useProduct.ts - ACTUALIZADO
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { getProductAllFn, getProductsFn, postProductFn, putProductFn } from "../api/products/apiProducts"
-import { useState } from "react"
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getProductAllFn, getProductsFn, postProductFn, putChangeProductStatusFn, putProductFn } from "../api/products/apiProducts"
 
 interface ProductsParams {
     page?: number;
@@ -21,15 +20,14 @@ export const useProduct = (params?: ProductsParams) => {
         queryFn: () => getProductsFn(params)
     })
 
-   const { data: allProductsData, isLoading: isLoadingAllProducts, isError: isErrorAllProducts } = useQuery({
-    queryKey: ['allProducts'],
-    queryFn: () => getProductAllFn(),
-    staleTime: 5 * 60 * 1000, // Los datos se consideran frescos por 5 minutos
-    cacheTime: 10 * 60 * 1000, // Los datos permanecen en caché por 10 minutos
-    refetchOnWindowFocus: false, // No recargar al enfocar la ventana
-})
+    const { data: allProductsData, isLoading: isLoadingAllProducts, isError: isErrorAllProducts } = useQuery({
+        queryKey: ['allProducts'],
+        queryFn: () => getProductAllFn(),
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
+        refetchOnWindowFocus: false,
+    })
 
-    // Verificar si la respuesta es un array (sin paginación) o un objeto (con paginación)
     const isArrayResponse = Array.isArray(data);
 
     const { 
@@ -63,8 +61,67 @@ export const useProduct = (params?: ProductsParams) => {
         }
     })
 
+    // MUTACIÓN CON ACTUALIZACIÓN OPTIMISTA
+    const { mutateAsync: putChangeProductStatus } = useMutation({
+        mutationFn: putChangeProductStatusFn,
+        
+        // Antes de la mutación - actualizar UI inmediatamente
+        onMutate: async (productId: number) => {
+            // Cancelar cualquier refetch en progreso
+            await queryClient.cancelQueries({ queryKey: ['products'] })
+            
+            // Guardar estado anterior para rollback
+            const previousData = queryClient.getQueryData(['products', params])
+            
+            // Actualizar cache optimistamente
+            queryClient.setQueryData(['products', params], (old: any) => {
+                if (!old) return old
+                
+                // Si es array simple
+                if (Array.isArray(old)) {
+                    return old.map((product: any) => 
+                        product.id === productId 
+                            ? { ...product, activo: !product.activo }
+                            : product
+                    )
+                }
+                
+                // Si es objeto paginado
+                return {
+                    ...old,
+                    productos: old.productos.map((product: any) => 
+                        product.id === productId 
+                            ? { ...product, activo: !product.activo }
+                            : product
+                    )
+                }
+            })
+            
+            return { previousData }
+        },
+        
+        // Si hay éxito
+        onSuccess: (data: any) => {
+            console.log("Estado del producto cambiado exitosamente:", data)
+        },
+        
+        // Si hay error - revertir cambios
+        onError: (error: any, productId, context) => {
+            console.error("Error al cambiar el estado del producto:", error)
+            
+            // Revertir al estado anterior
+            if (context?.previousData) {
+                queryClient.setQueryData(['products', params], context.previousData)
+            }
+        },
+        
+        // Siempre ejecutar al final - sincronizar con servidor
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] })
+        }
+    })
+
     return {
-        // Desestructurar la respuesta paginada o array simple
         productos: isArrayResponse ? data : (data?.productos || []),
         total: isArrayResponse ? data?.length || 0 : (data?.total || 0),
         page: isArrayResponse ? 1 : (data?.page || 1),
@@ -72,7 +129,6 @@ export const useProduct = (params?: ProductsParams) => {
         totalPages: isArrayResponse ? 1 : (data?.totalPages || 0),
         hasNextPage: isArrayResponse ? false : (data?.hasNextPage || false),
         hasPrevPage: isArrayResponse ? false : (data?.hasPrevPage || false),
-        // Mantener compatibilidad con código anterior
         AllProducts: isArrayResponse ? data : (data?.productos || []),
         isLoading,
         isError,
@@ -85,6 +141,7 @@ export const useProduct = (params?: ProductsParams) => {
         isPutProductPending,
         allProductsData,
         isLoadingAllProducts,
-        isErrorAllProducts
+        isErrorAllProducts,
+        putChangeProductStatus
     }
 }

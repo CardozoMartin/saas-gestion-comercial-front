@@ -66,7 +66,7 @@ const DashboardLayout = () => {
     },
     {
       id: "orders",
-      name: "Pedidos",
+      name: "Cajas",
       icon: FileText,
       path: "/dashboard/pedidos",
     },

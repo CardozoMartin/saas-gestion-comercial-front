@@ -58,3 +58,12 @@ export const putProductFn = async (updatedProduct: ProductUpdate) => {
         throw error;
     }
 };
+
+export const putChangeProductStatusFn = async (id: number) => {
+    try {
+        const response = await api.put(`/productos/change-status/${id}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

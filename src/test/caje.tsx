@@ -6,22 +6,15 @@ import { useSession } from "../store/useSession";
 
 export default function CajaPage() {
   const { user } = useSession();
-
   const { 
     postOpenBox, 
     isPostingBox, 
     useBoxByUser,
     useBoxDetailByUser,
-    closeBox,
-    useVerifyOpenBoxByUser
+    closeBox
   } = useBox();
   
   const [mostrarFormularioCierre, setMostrarFormularioCierre] = useState(false);
-
-  //Verificamos que el usuario tenga caja abierta
-  const { data: verifyBoxData, isLoading: isLoadingVerifyBox, isError: isErrorVerifyBox } = useVerifyOpenBoxByUser(user?.userId || 0);
-  console.log(isErrorVerifyBox, "este es el error")
-  console.log("verifyBoxData:", verifyBoxData);
   
   // ✅ PASO 1: Primero obtener solo el estado de la caja
   const { 
@@ -78,7 +71,6 @@ export default function CajaPage() {
   const diferencia = montoFinalContado - montoEsperado;
 
   const onSubmitAbrir = (data) => {
-    console.log("data antes de enviar:", data);
     Swal.fire({
       title: "¿Abrir Caja?",
       text: "¿Estás seguro de que deseas abrir la caja?",
@@ -187,7 +179,7 @@ export default function CajaPage() {
   // ========================================
   // FORMULARIO DE APERTURA (Sin caja abierta)
   // ========================================
-  if (isErrorVerifyBox) {
+  if (!cajaAbierta) {
     return (
       <div className="p-6">
         <div className="max-w-lg">
