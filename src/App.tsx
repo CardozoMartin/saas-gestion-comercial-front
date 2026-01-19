@@ -14,10 +14,11 @@ import ClientesPage from "./pages/ClientesPage";
 import PedidosPage from "./pages/PedidosPage";
 import CategoriasPage from "./pages/CategoriasPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-import ConfiguracionPage from "./pages/ConfiguracionPage";
+import ConfiguracionPage from "./pages/UsuariosPage";
 import UnitsPage from "./pages/UnitsPage";
 import PointSale from "./pages/PointSale";
 import AccounteDetails from "./components/Cliente/AccounteDetails";
+import UsuariosPage from "./pages/UsuariosPage";
 
 const App = () => {
   return (
@@ -40,12 +41,10 @@ const App = () => {
             <Route path="pedidos" element={<PedidosPage />} />
             <Route path="categorias" element={<CategoriasPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="configuracion" element={<ConfiguracionPage />} />
+            <Route path="usuarios" element={<UsuariosPage />} />
             <Route path="unidades" element={<UnitsPage />} />
             <Route path="punto-venta" element={<PointSale />} />
             <Route path="account-details" element={<AccounteDetails />} />
-
-
           </Route>
         </Route>
 

@@ -92,9 +92,9 @@ const DashboardLayout = () => {
     },
     {
       id: "settings",
-      name: "Configuración",
+      name: "Usuarios",
       icon: Settings,
-      path: "/dashboard/configuracion",
+      path: "/dashboard/usuarios",
     },
   ];
 

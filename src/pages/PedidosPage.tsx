@@ -28,8 +28,7 @@ export default function CajaPage() {
     isLoading: isLoadingVerifyBox,
     isError: isErrorVerifyBox,
   } = useVerifyOpenBoxByUser(user?.userId || 0);
-  console.log(isErrorVerifyBox, "este es el error");
-  console.log("verifyBoxData:", verifyBoxData);
+
 
   // ✅ PASO 1: Primero obtener solo el estado de la caja
   const { data: responseData, isLoading: isLoadingCaja } = useBoxByUser(
@@ -39,12 +38,12 @@ export default function CajaPage() {
   const cajaAbierta = responseData?.data?.[0] || null;
 
   // ✅ PASO 2: Solo obtener detalles si hay caja abierta
-  const { data: boxDetails, isLoading: isLoadingDetails } = useBoxDetailByUser(
-    user?.userId || 0,
-    {
-      enabled: !!cajaAbierta, // Solo ejecutar si cajaAbierta existe
-    },
-  );
+ const { data: boxDetails, isLoading: isLoadingDetails } = useBoxDetailByUser(
+  user?.userId || 0,
+  {
+    enabled: !!cajaAbierta,
+  },
+);
 
   const ventas = boxDetails?.data?.ventas || [];
   const resumen = boxDetails?.data?.resumen;
@@ -177,85 +176,85 @@ export default function CajaPage() {
   };
 
   // Loading solo de la verificación inicial de caja
-  if (isLoadingCaja) {
-    return (
-      <div className="p-6">
-        <div className="bg-white border border-gray-500/30 rounded-md p-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <span className="ml-3 text-gray-600/80">
-              Verificando estado de caja...
-            </span>
-          </div>
+ if (isLoadingCaja) {
+  return (
+    <div className="p-6">
+      <div className="bg-white border border-gray-500/30 rounded-md p-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <span className="ml-3 text-gray-600/80">
+            Verificando estado de caja...
+          </span>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
   // FORMULARIO DE APERTURA (Sin caja abierta)
-  if (isErrorVerifyBox) {
-    return (
-      <div className="p-6">
-        <div className="max-w-lg">
-          <div className="bg-white border border-gray-500/30 rounded-md p-5 shadow-sm">
-            <div className="mb-5">
-              <h2 className="text-lg font-semibold text-gray-800 mb-1">
-                Abrir Caja
-              </h2>
-              <p className="text-sm text-gray-600/80">
-                Ingresa el monto inicial para comenzar las operaciones del día
-              </p>
-            </div>
+ if (!cajaAbierta || isErrorVerifyBox) {
+  return (
+    <div className="p-6">
+      <div className="max-w-lg">
+        <div className="bg-white border border-gray-500/30 rounded-md p-5 shadow-sm">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">
+              Abrir Caja
+            </h2>
+            <p className="text-sm text-gray-600/80">
+              Ingresa el monto inicial para comenzar las operaciones del día
+            </p>
+          </div>
 
-            <FormBoxOpen
-              handleSubmitAbrir={handleSubmitAbrir}
-              onSubmitAbrir={onSubmitAbrir}
-              registerAbrir={registerAbrir}
-              errorsAbrir={errorsAbrir}
-              isPostingBox={isPostingBox}
-            />
+          <FormBoxOpen
+            handleSubmitAbrir={handleSubmitAbrir}
+            onSubmitAbrir={onSubmitAbrir}
+            registerAbrir={registerAbrir}
+            errorsAbrir={errorsAbrir}
+            isPostingBox={isPostingBox}
+          />
 
-            <div className="mt-5 pt-4 border-t border-gray-300/50">
-              <div className="flex items-center gap-2 text-xs text-gray-600/80">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="flex-shrink-0"
-                >
-                  <path
-                    d="M8 14.667A6.667 6.667 0 1 0 8 1.333a6.667 6.667 0 0 0 0 13.334M8 5.333V8m0 2.667h.007"
-                    stroke="currentColor"
-                    strokeWidth="1.3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span>El monto inicial será registrado en el sistema</span>
-              </div>
+          <div className="mt-5 pt-4 border-t border-gray-300/50">
+            <div className="flex items-center gap-2 text-xs text-gray-600/80">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="flex-shrink-0"
+              >
+                <path
+                  d="M8 14.667A6.667 6.667 0 1 0 8 1.333a6.667 6.667 0 0 0 0 13.334M8 5.333V8m0 2.667h.007"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>El monto inicial será registrado en el sistema</span>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // Loading de detalles (solo cuando hay caja abierta)
-  if (isLoadingDetails) {
-    return (
-      <div className="p-6">
-        <div className="bg-white border border-gray-500/30 rounded-md p-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <span className="ml-3 text-gray-600/80">
-              Cargando información de caja...
-            </span>
-          </div>
+ if (isLoadingDetails) {
+  return (
+    <div className="p-6">
+      <div className="bg-white border border-gray-500/30 rounded-md p-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <span className="ml-3 text-gray-600/80">
+            Cargando información de caja...
+          </span>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // VISTA PRINCIPAL (Con caja abierta)
 
