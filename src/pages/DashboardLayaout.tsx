@@ -25,12 +25,14 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useState } from "react";
+import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
 
 // Layout del Dashboard
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  useGlobalShortcuts();
   
   // Simulación de usuario - reemplaza con tu hook real
   const user = {

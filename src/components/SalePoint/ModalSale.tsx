@@ -24,7 +24,7 @@ interface FinishSale {
 
 export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
  
-  const [paymentMethod, setPaymentMethod] = useState('efectivo');
+  const [paymentMethod, setPaymentMethod] = useState('contado'); // Ya está en 'contado' (efectivo)
   const [moneyReceived, setMoneyReceived] = useState(0);
   const { postSale, isPostingSale, isPostSaleError, postSaleError } = useSale();
   const { user } = useSession();
@@ -49,10 +49,8 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
   const faltaPagar = Math.max(0, total - moneyReceived);
 
   const handleProcessSale = async () => {
-    if (paymentMethod === 'contado' && moneyReceived < total) {
-      toast.error('El monto recibido es insuficiente');
-      return;
-    }
+    // Removida la validación obligatoria del monto recibido
+    // Ya no es necesario que moneyReceived >= total para efectivo
 
     const saleData: FinishSale = {
       clienteId: undefined,
@@ -189,23 +187,23 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
                   </select>
                 </div>
 
-                {/* Monto recibido para efectivo */}
+                {/* Monto recibido para efectivo (OPCIONAL) */}
                 {paymentMethod === 'contado' && (
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-gray-700">
-                      Monto Recibido
+                      Monto Recibido <span className="text-gray-400 font-normal">(opcional)</span>
                     </label>
                     <input
                       type="number"
                       step="0.01"
                       disabled={isPostingSale}
                       className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder="Ingrese el monto recibido"
+                      placeholder="Ingrese el monto para calcular cambio"
                       value={moneyReceived || ''}
                       onChange={(e) => setMoneyReceived(parseFloat(e.target.value) || 0)}
                     />
                     
-                    {/* Indicador de cambio o falta */}
+                    {/* Indicador de cambio o falta (solo si se ingresó un monto) */}
                     {moneyReceived > 0 && (
                       <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
                         {cambio > 0 ? (
@@ -247,7 +245,7 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
                 <div className="space-y-2 pt-2">
                   <button
                     onClick={handleProcessSale}
-                    disabled={isPostingSale || (paymentMethod === 'contado' && moneyReceived < total)}
+                    disabled={isPostingSale}
                     className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     {isPostingSale ? (
