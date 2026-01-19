@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useCliente } from "../../hooks/useCliente";
+import Swal from "sweetalert2";
 
 interface Cliente {
   tipoDocumento: string;
@@ -34,6 +36,11 @@ interface Cliente {
 const FormCliente = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  //Hook para crear un cliente
+  const { usePostCliente } = useCliente();
+
+  const { mutate: postCliente, isPending, isError } = usePostCliente();
 
   const {
     register,
@@ -63,8 +70,14 @@ const FormCliente = () => {
     setIsLoading(true);
     
     // Simular envío de datos
-    console.log("Datos del cliente:", data);
-    
+   Swal.fire({
+      title: 'Guardando cliente...',
+      didOpen: () => {
+        Swal.showLoading();
+      },
+      allowOutsideClick: false,
+    });
+    postCliente(data);
     // Simular respuesta del servidor
     setTimeout(() => {
       setShowSuccessMessage(true);
@@ -431,12 +444,10 @@ const FormCliente = () => {
                   }`}
                 >
                   <option value="">-- Selecciona --</option>
-                  <option value="1">Contado</option>
-                  <option value="2">7 días</option>
-                  <option value="3">15 días</option>
-                  <option value="4">30 días</option>
-                  <option value="5">60 días</option>
-                  <option value="6">90 días</option>
+                  <option value="1">Semanal</option>
+                  <option value="2">Quincena</option>
+                  <option value="3">Mensual</option>
+                  <option value="4">Bimestral</option>
                 </select>
                 {errors.condicionPagoId && (
                   <div className="flex items-center gap-1.5 mt-1.5">

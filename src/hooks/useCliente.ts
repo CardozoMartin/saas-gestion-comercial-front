@@ -1,5 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getClienteConDeudasFn, getClientesFn, getResumenCuentaCorrienteFn } from "../api/clientes/apiClients";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getClienteConDeudasFn, getClientesFn, getResumenCuentaCorrienteFn, patchChangeStateClienteFn, postClienteFn } from "../api/clientes/apiClients";
 
 export const useCliente = () => {
     const queryClient = useQueryClient();
@@ -34,9 +34,36 @@ export const useCliente = () => {
         }); 
     }
 
+    const usePostCliente = () => {
+        return useMutation({
+            mutationFn: postClienteFn,
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['clientes'] });
+            },
+            onError: (error) => {
+                console.error("Error al crear el cliente:", error);
+            }
+        });
+    }
+
+    //Hook para cambiar el estado activo/inactivo del cliente
+    const usePatchChangeStateCliente = () => {
+        return useMutation({
+            mutationFn: patchChangeStateClienteFn,
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['clientes'] });
+            },
+            onError: (error) => {
+                console.error("Error al cambiar el estado del cliente:", error);
+            }
+        });
+    }
+
     return {
         useGetClientes,
         useGetCuentaCorrienteCliente,
-        useGetClientesConDeudas
+        useGetClientesConDeudas,
+        usePostCliente,
+        usePatchChangeStateCliente
     };
 };

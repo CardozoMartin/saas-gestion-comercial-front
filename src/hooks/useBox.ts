@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { closeBoxFn, getBoxByUserFn, getBoxDatailByUserFn, getVerifyOpenBoxByUserFn, postOpenBoxFn } from "../api/boxes/apiBox";
+import { closeBoxFn, getBoxByUserFn, getBoxDatailByUserFn, getBoxFn, getVerifyOpenBoxByUserFn, postOpenBoxFn } from "../api/boxes/apiBox";
 
 export const useBox = () => {
     const queryClient = useQueryClient();
@@ -20,7 +20,15 @@ export const useBox = () => {
             console.error("Error al abrir caja:", error);
         },
     });
-
+    //Hook para obtener todas las cajas
+    const useGetBoxesAll = () => {
+        return useQuery({
+            queryKey: ['boxesAll'],
+            queryFn: () => getBoxFn(),
+            staleTime: 1000 * 60 * 5,
+            retry: 1,
+        });
+    }
     // Función para obtener la caja abierta por usuario
     const useBoxByUser = (userId: number) => {
         return useQuery({
@@ -83,6 +91,7 @@ export const useBox = () => {
         isClosingBox,
         isCloseBoxError,
         closeBoxError,
-        useVerifyOpenBoxByUser
+        useVerifyOpenBoxByUser,
+        useGetBoxesAll,
     };
 };
