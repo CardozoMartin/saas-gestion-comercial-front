@@ -1,33 +1,23 @@
-import React, { useState, useEffect } from "react";
-import {
-  Search,
-  Plus,
-  Minus,
-  Trash2,
-  ShoppingCart,
-  X,
-  DollarSign,
-  CreditCard,
-  Barcode,
-  Scale,
-} from "lucide-react";
+import { useState } from "react";
+import { Search, ShoppingCart } from "lucide-react";
 import { useProduct } from "../hooks/useProduct";
 import { useCart } from "../store/useCart";
 import ModalSale from "../components/SalePoint/ModalSale";
 import DrawerCliente from "../components/Drawer/DrawerCliente";
+import { useShortcuts } from "../hooks/useShortcuts";
+import CartItems from "../components/SalePoint/CartItems";
+import SearchBar from "../components/SalePoint/SearchBar";
+import ProductCard from "../components/SalePoint/ProductCard";
 
 const PointSale = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [inputType, setInputType] = useState("cantidad"); // 'cantidad' o 'monto'
+  const [inputType, setInputType] = useState("cantidad");
   const [inputValue, setInputValue] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("efectivo");
-  const [moneyReceived, setMoneyReceived] = useState(0);
   const [showCuentaCorrienteModal, setShowCuentaCorrienteModal] = useState(false);
 
   const { allProductsData } = useProduct();
-  console.log("All Products Data:", allProductsData);
   const {
     cart,
     addToCart: addToCartStore,
@@ -36,15 +26,98 @@ const PointSale = () => {
     updateQuantity,
   } = useCart();
 
-  // Usar el carrito del store
   const cartItems = cart;
 
-  // Determinar si un producto se vende por peso/volumen
+  // ATAJOS DE TECLADO
+  useShortcuts({
+    enter: () => {
+      if (cartItems.length > 0 && !showModal && !showCuentaCorrienteModal) {
+        setShowModal(true);
+      }
+    },
+    escape: () => {
+      if (selectedProduct) {
+        setSelectedProduct(null);
+        setInputValue("");
+      } else if (showModal) {
+        setShowModal(false);
+      } else if (showCuentaCorrienteModal) {
+        setShowCuentaCorrienteModal(false);
+      } else if (cartItems.length > 0) {
+        if (confirm("¿Limpiar el carrito?")) {
+          clearCart();
+        }
+      }
+    },
+    "ctrl+l": () => {
+      if (cartItems.length > 0 && confirm("¿Limpiar el carrito?")) {
+        clearCart();
+      }
+    },
+    "ctrl+g": () => {
+      if (cartItems.length > 0 && !showModal) {
+        setShowModal(true);
+      }
+    },
+    "ctrl+c": () => {
+      if (cartItems.length > 0 && !showCuentaCorrienteModal) {
+        setShowCuentaCorrienteModal(true);
+      }
+    },
+    "ctrl+b": () => {
+      const searchInput = document.getElementById("search-product");
+      searchInput?.focus();
+      searchInput?.select();
+    },
+    f1: () => agregarProductoRapido("Coca Cola 2.25L"),
+    f7: () => agregarProductoRapido("Cigarrillos"),
+    f8: () => agregarProductoRapido("Pan"),
+    f9: () => agregarProductoRapido("Leche"),
+    "+": () => {
+      if (cartItems.length > 0) {
+        const ultimoItem = cartItems[cartItems.length - 1];
+        incrementQuantity(ultimoItem.id, ultimoItem.stockActual);
+      }
+    },
+    "-": () => {
+      if (cartItems.length > 0) {
+        const ultimoItem = cartItems[cartItems.length - 1];
+        decrementQuantity(ultimoItem.id);
+      }
+    },
+    delete: () => {
+      if (cartItems.length > 0) {
+        const ultimoItem = cartItems[cartItems.length - 1];
+        removeFromCart(ultimoItem.id);
+      }
+    },
+  });
+
+  const showNotification = (message, type = "success") => {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+  };
+
+  const agregarProductoRapido = (nombreProducto) => {
+    const producto = allProductsData?.find((p) =>
+      p.nombre.toLowerCase().includes(nombreProducto.toLowerCase())
+    );
+
+    if (producto) {
+      if (isWeightVolumeSale(producto.unidadMedidaNombre)) {
+        setSelectedProduct(producto);
+      } else {
+        addToCart(producto);
+        showNotification(`✅ ${producto.nombre} agregado`);
+      }
+    } else {
+      showNotification(`❌ Producto "${nombreProducto}" no encontrado`, "error");
+    }
+  };
+
   const isWeightVolumeSale = (unidadMedida) => {
     return ["Kilogramo", "Litro", "Metro"].includes(unidadMedida);
   };
 
-  // Convertir a unidad menor
   const getSubUnit = (unidadMedida) => {
     const map = {
       Kilogramo: "gramos",
@@ -54,19 +127,15 @@ const PointSale = () => {
     return map[unidadMedida] || unidadMedida;
   };
 
-  // Calcular cantidad según el tipo de input
   const calculateQuantity = (producto, type, value) => {
     const numValue = parseFloat(value) || 0;
-
     if (type === "cantidad") {
       return numValue;
     } else {
-      // Monto / precio = cantidad
       return numValue / parseFloat(producto.precioVenta);
     }
   };
 
-  // Filtrar productos
   const filteredProducts = searchTerm.trim()
     ? allProductsData?.filter(
         (p) =>
@@ -75,7 +144,6 @@ const PointSale = () => {
       ) || []
     : [];
 
-  // Agregar al carrito - ahora usa el store
   const addToCart = (producto, cantidadCustom = null) => {
     const cantidad = cantidadCustom !== null ? cantidadCustom : 1;
 
@@ -92,7 +160,6 @@ const PointSale = () => {
     });
   };
 
-  // Manejar click en producto
   const handleProductClick = (producto) => {
     if (isWeightVolumeSale(producto.unidadMedidaNombre)) {
       setSelectedProduct(producto);
@@ -103,7 +170,6 @@ const PointSale = () => {
     }
   };
 
-  // Confirmar producto con peso/volumen
   const handleWeightConfirm = () => {
     if (!selectedProduct || !inputValue) return;
 
@@ -126,7 +192,6 @@ const PointSale = () => {
     setInputValue("");
   };
 
-  // Incrementar cantidad - ahora usa updateQuantity del store
   const incrementQuantity = (id, stock) => {
     const item = cartItems.find((i) => i.id === id);
     if (!item) return;
@@ -137,7 +202,6 @@ const PointSale = () => {
     updateQuantity(id, newQuantity);
   };
 
-  // Decrementar cantidad - ahora usa updateQuantity del store
   const decrementQuantity = (id) => {
     const item = cartItems.find((i) => i.id === id);
     if (!item) return;
@@ -150,17 +214,14 @@ const PointSale = () => {
     updateQuantity(id, newQuantity);
   };
 
-  // Eliminar del carrito - usa el store
   const removeFromCart = (id) => {
     removeFromCartStore(id);
   };
 
-  // Limpiar carrito - usa el store
   const clearCart = () => {
     clearCartStore();
   };
 
-  // Formatear cantidad para mostrar
   const formatQuantity = (producto, cantidad) => {
     if (isWeightVolumeSale(producto.unidadMedidaNombre)) {
       const subUnit = getSubUnit(producto.unidadMedidaNombre);
@@ -174,7 +235,6 @@ const PointSale = () => {
     }
   };
 
-  // Calcular vista previa
   const getPreview = () => {
     if (!selectedProduct || !inputValue) return null;
 
@@ -188,9 +248,6 @@ const PointSale = () => {
     };
   };
 
-  const preview = getPreview();
-
-  // Calcular totales
   const subtotal = cartItems.reduce(
     (sum, item) => sum + parseFloat(item.precioVenta) * item.cantidad,
     0
@@ -201,9 +258,10 @@ const PointSale = () => {
   const handleFinishSale = () => {
     setShowModal(true);
   };
+
   const handleDrawCuentaCorriente = () => {
     setShowCuentaCorrienteModal(true);
-  }
+  };
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -224,29 +282,12 @@ const PointSale = () => {
         {/* Columna Izquierda */}
         <div className="lg:col-span-2 flex flex-col gap-4 overflow-hidden">
           {/* Barra de búsqueda */}
-          <div className="bg-white rounded-lg border border-gray-500/30 p-4">
-            <div className="relative">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
-                type="text"
-                placeholder="Buscar por nombre o código del producto..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none"
-                autoFocus
-              />
-            </div>
-          </div>
+          <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
           {/* Lista de Productos */}
           <div className="bg-white rounded-lg border border-gray-500/30 flex-1 overflow-hidden flex flex-col">
             <div className="p-4 border-b border-gray-500/30">
-              <h3 className="font-semibold text-gray-800">
-                Productos Disponibles
-              </h3>
+              <h3 className="font-semibold text-gray-800">Productos Disponibles</h3>
               <p className="text-xs text-gray-600 mt-1">
                 {searchTerm
                   ? `${filteredProducts.length} resultados para "${searchTerm}"`
@@ -258,9 +299,7 @@ const PointSale = () => {
               {!searchTerm ? (
                 <div className="text-center py-12">
                   <Search size={48} className="mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500">
-                    Busca productos por nombre o código
-                  </p>
+                  <p className="text-gray-500">Busca productos por nombre o código</p>
                   <p className="text-gray-400 text-sm mt-1">
                     Escribe en el campo de búsqueda para comenzar
                   </p>
@@ -280,146 +319,20 @@ const PointSale = () => {
                     const productPreview = isSelected ? getPreview() : null;
 
                     return (
-                      <div
+                      <ProductCard
                         key={producto.id}
-                        className={`border rounded-lg p-3 transition ${
-                          isSelected
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-gray-400"
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-800 text-sm">
-                              {producto.nombre}
-                            </h4>
-                            <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                              <Barcode size={12} />
-                              {producto.codigo}
-                            </p>
-                            <p className="text-xs text-blue-600 mt-1">
-                              {producto.categoriaNombre}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-gray-800">
-                              ${producto.precioVenta}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              / {producto.unidadMedidaNombre}
-                            </p>
-                            <p
-                              className={`text-xs ${
-                                producto.stockActual > 10
-                                  ? "text-green-600"
-                                  : "text-orange-600"
-                              }`}
-                            >
-                              Stock: {producto.stockActual}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Formulario expandido para productos por peso/volumen */}
-                        {isSelected &&
-                        isWeightVolumeSale(producto.unidadMedidaNombre) ? (
-                          <div className="space-y-2 mt-3 pt-3 border-t border-blue-200">
-                            {/* Selector de tipo */}
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => setInputType("cantidad")}
-                                className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition ${
-                                  inputType === "cantidad"
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                                }`}
-                              >
-                                <Scale size={12} className="inline mr-1" />
-                                Cantidad
-                              </button>
-                              <button
-                                onClick={() => setInputType("monto")}
-                                className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition ${
-                                  inputType === "monto"
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                                }`}
-                              >
-                                <DollarSign size={12} className="inline mr-1" />
-                                Monto
-                              </button>
-                            </div>
-
-                            {/* Input */}
-                            <input
-                              type="number"
-                              step="0.001"
-                              value={inputValue}
-                              onChange={(e) => setInputValue(e.target.value)}
-                              placeholder={
-                                inputType === "cantidad" ? "0.500" : "200"
-                              }
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                              autoFocus
-                            />
-
-                            {/* Vista previa */}
-                            {productPreview && (
-                              <div className="bg-white border border-blue-300 rounded-lg p-2">
-                                <p className="text-xs text-gray-600">
-                                  Vista previa:
-                                </p>
-                                <p className="text-sm font-semibold text-blue-900">
-                                  {productPreview.cantidadFormateada}
-                                </p>
-                                <p className="text-base font-bold text-blue-900">
-                                  Total: ${productPreview.monto.toFixed(2)}
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Botones */}
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => setSelectedProduct(null)}
-                                className="flex-1 py-2 text-xs border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                              >
-                                Cancelar
-                              </button>
-                              <button
-                                onClick={handleWeightConfirm}
-                                disabled={
-                                  !inputValue || parseFloat(inputValue) <= 0
-                                }
-                                className="flex-1 py-2 text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-semibold transition"
-                              >
-                                Agregar
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleProductClick(producto);
-                            }}
-                            disabled={producto.stockActual === 0}
-                            className="w-full mt-2 py-2 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm rounded-lg transition flex items-center justify-center gap-2"
-                          >
-                            {isWeightVolumeSale(producto.unidadMedidaNombre) ? (
-                              <>
-                                <Scale size={16} />
-                                Pesar/Medir
-                              </>
-                            ) : (
-                              <>
-                                <Plus size={16} />
-                                Agregar
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
+                        producto={producto}
+                        isSelected={isSelected}
+                        isWeightVolume={isWeightVolumeSale(producto.unidadMedidaNombre)}
+                        inputType={inputType}
+                        inputValue={inputValue}
+                        productPreview={productPreview}
+                        onProductClick={handleProductClick}
+                        onInputTypeChange={setInputType}
+                        onInputValueChange={setInputValue}
+                        onCancel={() => setSelectedProduct(null)}
+                        onConfirm={handleWeightConfirm}
+                      />
                     );
                   })}
                 </div>
@@ -429,133 +342,20 @@ const PointSale = () => {
         </div>
 
         {/* Columna Derecha: Carrito */}
-        <div className="lg:col-span-1 flex flex-col gap-4 overflow-hidden">
-          <div className="bg-white rounded-lg border border-gray-500/30 flex-1 overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-500/30 flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-gray-800">
-                  Carrito de Compra
-                </h3>
-                <p className="text-xs text-gray-600 mt-1">
-                  {cartItems.length} productos
-                </p>
-              </div>
-              {cartItems.length > 0 && (
-                <button
-                  onClick={clearCart}
-                  className="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
-                >
-                  <Trash2 size={14} />
-                  Limpiar
-                </button>
-              )}
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4">
-              {cartItems.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShoppingCart
-                    size={48}
-                    className="mx-auto text-gray-300 mb-3"
-                  />
-                  <p className="text-gray-500 text-sm">El carrito está vacío</p>
-                  <p className="text-gray-400 text-xs mt-1">
-                    Agrega productos para continuar
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border border-gray-200 rounded-lg p-3"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-800 text-sm">
-                            {item.nombre}
-                          </h4>
-                          <p className="text-xs text-gray-500">
-                            ${item.precioVenta} / {item.unidadMedidaNombre}
-                          </p>
-                          <p className="text-xs text-blue-600 mt-1">
-                            {formatQuantity(item, item.cantidad)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          className="p-1 hover:bg-red-50 rounded transition"
-                        >
-                          <X size={16} className="text-red-600" />
-                        </button>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => decrementQuantity(item.id)}
-                            className="p-1 bg-gray-100 hover:bg-gray-200 rounded transition"
-                          >
-                            <Minus size={14} />
-                          </button>
-                          <span className="text-xs font-semibold px-2">
-                            {item.cantidad.toFixed(3)}
-                          </span>
-                          <button
-                            onClick={() =>
-                              incrementQuantity(item.id, item.stockActual)
-                            }
-                            className="p-1 bg-gray-100 hover:bg-gray-200 rounded transition"
-                          >
-                            <Plus size={14} />
-                          </button>
-                        </div>
-                        <span className="font-bold text-gray-800">
-                          $
-                          {(
-                            parseFloat(item.precioVenta) * item.cantidad
-                          ).toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {cartItems.length > 0 && (
-              <div className="border-t border-gray-500/30 p-4 space-y-3">
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal:</span>
-                    <span>${subtotal.toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t border-gray-200">
-                    <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <button
-                  className="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-                  onClick={handleDrawCuentaCorriente}
-                >
-                  <CreditCard size={20} />
-                  Cargar venta cuenta corriente
-                </button>
-                <button
-                  className="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-                  onClick={handleFinishSale}
-                >
-                  <CreditCard size={20} />
-                  Procesar Venta
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <CartItems
+          cartItems={cartItems}
+          clearCart={clearCart}
+          removeFromCart={removeFromCart}
+          decrementQuantity={decrementQuantity}
+          incrementQuantity={incrementQuantity}
+          formatQuantity={formatQuantity}
+          subtotal={subtotal}
+          total={total}
+          handleDrawCuentaCorriente={handleDrawCuentaCorriente}
+          handleFinishSale={handleFinishSale}
+        />
       </div>
+
       {showModal && (
         <ModalSale
           cart={cartItems}
@@ -564,15 +364,14 @@ const PointSale = () => {
           setShowModal={setShowModal}
         />
       )}
+
       {showCuentaCorrienteModal && (
         <DrawerCliente
           open={showCuentaCorrienteModal}
           onClose={() => setShowCuentaCorrienteModal(false)}
           cart={cartItems}
           setCart={() => {}}
-        >
-          {/* Aquí puedes agregar el contenido del DrawerCliente */}
-        </DrawerCliente>
+        />
       )}
     </div>
   );

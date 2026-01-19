@@ -50,7 +50,7 @@ export const useBox = () => {
             enabled: !!userId && userId > 0,
             staleTime: 1000 * 60 * 5,
             retry: 1,
-            ...options, // ✅ Esto permite sobrescribir el enabled desde el componente
+            ...options, 
         });
     }
 

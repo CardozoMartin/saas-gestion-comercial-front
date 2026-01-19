@@ -30,7 +30,6 @@ export const getProductsFn = async (params?: ProductsParams) => {
         throw error;
     }
 };
-
 export const getProductAllFn = async ()=>{
     try {
         const response = await api.get("/productos/allproducts/");
@@ -48,7 +47,6 @@ export const postProductFn = async (newProduct: Product) => {
         throw error;
     }
 };
-
 export const putProductFn = async (updatedProduct: ProductUpdate) => {
     try {
         const { id, ...productData } = updatedProduct;
@@ -58,10 +56,17 @@ export const putProductFn = async (updatedProduct: ProductUpdate) => {
         throw error;
     }
 };
-
 export const putChangeProductStatusFn = async (id: number) => {
     try {
         const response = await api.put(`/productos/change-status/${id}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+export const getProductLowStockFn = async () =>{
+    try {
+        const response = await api.get("/productos/lowstock/");
         return response.data;
     } catch (error) {
         throw error;

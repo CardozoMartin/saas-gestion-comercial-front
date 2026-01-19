@@ -1,6 +1,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getProductAllFn, getProductsFn, postProductFn, putChangeProductStatusFn, putProductFn } from "../api/products/apiProducts"
+import { getProductAllFn, getProductLowStockFn, getProductsFn, postProductFn, putChangeProductStatusFn, putProductFn } from "../api/products/apiProducts"
 
 interface ProductsParams {
     page?: number;
@@ -18,6 +18,15 @@ export const useProduct = (params?: ProductsParams) => {
     const { data, isLoading, isError } = useQuery({
         queryKey: ['products', params],
         queryFn: () => getProductsFn(params)
+    })
+
+    //obtener los productos que estan bajo stock
+    const { data: lowStockProductsData, isLoading: isLoadingLowStockProducts, isError: isErrorLowStockProducts } = useQuery({
+        queryKey: ['lowStockProducts'],
+        queryFn: () => getProductLowStockFn(),
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
+        refetchOnWindowFocus: false,
     })
 
     const { data: allProductsData, isLoading: isLoadingAllProducts, isError: isErrorAllProducts } = useQuery({
@@ -61,7 +70,7 @@ export const useProduct = (params?: ProductsParams) => {
         }
     })
 
-    // MUTACIÓN CON ACTUALIZACIÓN OPTIMISTA
+    // MUTACIÓN CON ACTUALIZACIÓN
     const { mutateAsync: putChangeProductStatus } = useMutation({
         mutationFn: putChangeProductStatusFn,
         
@@ -142,6 +151,10 @@ export const useProduct = (params?: ProductsParams) => {
         allProductsData,
         isLoadingAllProducts,
         isErrorAllProducts,
-        putChangeProductStatus
+        putChangeProductStatus,
+        lowStockProductsData,
+        isLoadingLowStockProducts,
+        isErrorLowStockProducts
+
     }
 }
