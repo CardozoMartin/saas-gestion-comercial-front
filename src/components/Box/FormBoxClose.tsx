@@ -67,6 +67,67 @@ const FormBoxClose = ({
         </p>
       </div>
 
+
+         <div>
+        <label className="block text-sm font-medium text-gray-800/80 mb-2">
+          Monto Retirado *
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">
+            $
+          </span>
+          <input
+            {...registerCerrar("montoRetirado", {
+              required: "El monto retirado es obligatorio",
+              min: { value: 0, message: "El monto no puede ser negativo" },
+            })}
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            className="w-full pl-8 pr-4 py-2.5 border border-gray-300/70 rounded-md text-gray-800 placeholder-gray-400/70 focus:outline-none focus:ring-2 focus:ring-gray-400/50 focus:border-gray-400 transition-all text-sm font-medium"
+          />
+        </div>
+        {errorsCerrar.montoRetirado && (
+          <p className="text-xs text-red-600/80 mt-1.5 font-medium">
+            {errorsCerrar.montoRetirado.message}
+          </p>
+        )}
+        <p className="text-xs text-gray-600/80 mt-1.5">
+          Monto retirado de la caja durante el cierre
+        </p>
+      </div>
+
+
+         <div>
+        <label className="block text-sm font-medium text-gray-800/80 mb-2">
+          Saldo en la Siguiente Caja *
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">
+            $
+          </span>
+          <input
+            {...registerCerrar("fondoSiguienteCaja", {
+              required: "El saldo en la siguiente caja es obligatorio",
+              min: { value: 0, message: "El monto no puede ser negativo" },
+            })}
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            className="w-full pl-8 pr-4 py-2.5 border border-gray-300/70 rounded-md text-gray-800 placeholder-gray-400/70 focus:outline-none focus:ring-2 focus:ring-gray-400/50 focus:border-gray-400 transition-all text-sm font-medium"
+          />
+        </div>
+        {errorsCerrar.fondoSiguienteCaja && (
+          <p className="text-xs text-red-600/80 mt-1.5 font-medium">
+            {errorsCerrar.fondoSiguienteCaja.message}
+          </p>
+        )}
+        <p className="text-xs text-gray-600/80 mt-1.5">
+          Saldo que quedará en la siguiente caja para iniciar operaciones (efectivo + transferencias
+          verificadas)
+        </p>
+      </div>
+
       {/* Mostrar diferencia en tiempo real */}
       {montoFinalContado > 0 && (
         <div

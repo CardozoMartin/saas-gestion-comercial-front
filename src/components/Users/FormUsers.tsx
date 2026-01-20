@@ -20,6 +20,7 @@ interface Usuario {
   email: string;
   password: string;
   telefono: string;
+    rolId: number;
 }
 
 const FormUsers = () => {
@@ -44,16 +45,21 @@ const FormUsers = () => {
       email: "",
       password: "",
       telefono: "",
+      rolId:0
     },
   });
 
   const password = watch("password");
 
   const onSubmit = (data: Usuario) => {
+    const datos: Usuario = {
+    ...data,
+    rolId: Number(data.rolId), // Convertir a número
+  };
     setIsLoading(true);
-    postUser(data);
+    postUser(datos);
     console.log("Datos del usuario:", data);
-    
+
     // Simular envío al servidor
     setTimeout(() => {
       setShowSuccessMessage(true);
@@ -167,6 +173,37 @@ const FormUsers = () => {
                     <AlertCircle className="w-3.5 h-3.5 text-red-500/80" />
                     <span className="text-red-600/80 text-xs font-medium">
                       {errors.apellido.message}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-800/80 mb-2">
+                  Selecciona el rol *
+                </label>
+                <select
+                  {...register("rolId", {
+                    required: "Selecciona un rol",
+                    validate: (value) =>
+                      value > 0 || "Debes seleccionar un rol válido",
+                  })}
+                  className={`w-full border rounded-md px-3 py-2 text-sm font-medium text-gray-800/80 focus:outline-none focus:ring-1 focus:ring-gray-400 transition ${
+                    errors.rolId
+                      ? "border-red-400/60 bg-red-50/30"
+                      : "border-gray-500/30 hover:border-gray-500/50"
+                  }`}
+                >
+                  <option value="">-- Selecciona --</option>
+                  <option value="1">Admin</option>
+                  <option value="2">Vendedor</option>
+                  <option value="3">Cajero</option>
+                  
+                </select>
+                {errors.rolId && (
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-500/80" />
+                    <span className="text-red-600/80 text-xs font-medium">
+                      {errors.rolId.message}
                     </span>
                   </div>
                 )}
@@ -308,8 +345,8 @@ const FormUsers = () => {
                           password.length < 6
                             ? "w-1/3 bg-red-500"
                             : password.length < 10
-                            ? "w-2/3 bg-yellow-500"
-                            : "w-full bg-green-500"
+                              ? "w-2/3 bg-yellow-500"
+                              : "w-full bg-green-500"
                         }`}
                       ></div>
                     </div>

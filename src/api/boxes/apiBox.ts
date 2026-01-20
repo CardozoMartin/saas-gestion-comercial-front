@@ -2,7 +2,7 @@ import { api } from "../config";
 
 interface Box {
   usuarioId: number;
-  montoInicial: number;
+  observaciones: string;
 }
 
 export const postOpenBoxFn = async (newBox: Box) => {

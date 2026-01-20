@@ -1,19 +1,13 @@
 import {
-  BrowserRouter,
-  Route,
-  Routes,
   Outlet,
   useNavigate,
   useLocation,
 } from "react-router-dom";
 import {
-  TrendingUp,
   Users,
   ShoppingCart,
-  DollarSign,
   BarChart3,
   Package,
-  Calendar,
   Settings,
   LogOut,
   Home,
@@ -26,80 +20,116 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
+import { useSession } from "../store/useSession";
+import { usePermissions } from "../hooks/usePermissions";
 
 // Layout del Dashboard
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useSession();
+  const { canAccess, userRole } = usePermissions();
+  
   useGlobalShortcuts();
   
-  // Simulación de usuario - reemplaza con tu hook real
-  const user = {
-    nombre: "Admin Usuario",
-    email: "admin@ejemplo.com"
-  };
-  
-  const menuItems = [
-    { id: "dashboard", name: "Dashboard", icon: Home, path: "/dashboard" },
+  // Define todos los menús con sus roles permitidos
+  const allMenuItems = [
+    { 
+      id: "dashboard", 
+      name: "Dashboard", 
+      icon: Home, 
+      path: "/dashboard",
+      roles: ['admin', 'vendedor']
+    },
     {
       id: "pos",
       name: "Punto de Venta",
       icon: CreditCard,
       path: "/dashboard/punto-venta",
-    },
-    {
-      id: "products",
-      name: "Productos",
-      icon: Package,
-      path: "/dashboard/productos",
+      roles: ['admin', 'vendedor', 'cajero']
     },
     {
       id: "sales",
       name: "Ventas",
       icon: ShoppingCart,
       path: "/dashboard/ventas",
+      roles: ['admin', 'vendedor', 'cajero']
+    },
+    {
+      id: "products",
+      name: "Productos",
+      icon: Package,
+      path: "/dashboard/productos",
+      roles: ['admin', 'cajero']
     },
     {
       id: "customers",
       name: "Clientes",
       icon: Users,
       path: "/dashboard/clientes",
+      roles: ['admin', 'cajero']
     },
     {
       id: "orders",
       name: "Cajas",
       icon: FileText,
       path: "/dashboard/pedidos",
+      roles: ['admin', 'vendedor']
     },
     {
       id: "categories",
       name: "Categorías",
       icon: Tag,
       path: "/dashboard/categorias",
-    },
-    {
-      id: "analytics",
-      name: "Análisis",
-      icon: BarChart3,
-      path: "/dashboard/analytics",
+      roles: ['admin']
     },
     {
       id: "units",
       name: "Unidades",
       icon: Ruler,
       path: "/dashboard/unidades",
+      roles: ['admin']
+    },
+    {
+      id: "analytics",
+      name: "Análisis",
+      icon: BarChart3,
+      path: "/dashboard/analytics",
+      roles: ['admin']
     },
     {
       id: "settings",
       name: "Usuarios",
       icon: Settings,
       path: "/dashboard/usuarios",
+      roles: ['admin']
+    },
+     {
+      id: "update-stock",
+      name: "Actualizar Stock",
+      icon: Settings,
+      path: "/dashboard/update-stock",
+      roles: ['admin']
     },
   ];
 
+  // Filtrar menús según los permisos del usuario
+  const menuItems = allMenuItems.filter(item => canAccess(item.path));
+
   const handleLogout = () => {
+    logout();
     navigate("/login");
+  };
+
+  // Función para obtener el label del rol
+  const getRoleLabel = (role: string) => {
+    const roleLabels: Record<string, string> = {
+      'admin': 'Administrador',
+      'vendedor': 'Vendedor',
+      'cajero': 'Cajero'
+    };
+    return roleLabels[role.toLowerCase()] || role;
   };
 
   return (
@@ -116,6 +146,10 @@ const DashboardLayout = () => {
             <>
               <h1 className="text-xl font-bold text-gray-800">Sistema Ventas</h1>
               <p className="text-xs text-gray-600 mt-1">Panel de Control</p>
+              {/* Mostrar rol del usuario */}
+              <div className="mt-2 inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                {getRoleLabel(userRole)}
+              </div>
             </>
           ) : (
             <div className="flex justify-center">
@@ -189,10 +223,12 @@ const DashboardLayout = () => {
                 <p className="text-sm font-medium text-gray-800">
                   {user?.nombre || "Usuario"}
                 </p>
-                <p className="text-xs text-gray-600">{user?.email || ""}</p>
+                <p className="text-xs text-gray-600">
+                  {user?.email || ""}
+                </p>
               </div>
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                {user?.nombre?.charAt(0).toUpperCase() || "A"}
+                {user?.nombre?.charAt(0).toUpperCase() || "U"}
               </div>
             </div>
           </div>

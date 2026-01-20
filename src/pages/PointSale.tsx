@@ -8,6 +8,7 @@ import { useShortcuts } from "../hooks/useShortcuts";
 import CartItems from "../components/SalePoint/CartItems";
 import SearchBar from "../components/SalePoint/SearchBar";
 import ProductCard from "../components/SalePoint/ProductCard";
+import { useSession } from "../store/useSession";
 
 const PointSale = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,6 +26,8 @@ const PointSale = () => {
     clearCart: clearCartStore,
     updateQuantity,
   } = useCart();
+   const { user } = useSession();
+    console.log("Usuario en DashboardLayout:", user);
 
   const cartItems = cart;
 

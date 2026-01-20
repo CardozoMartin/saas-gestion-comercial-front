@@ -1,6 +1,11 @@
 import React from "react";
 
-const TableUsers = () => {
+interface TableUsersProps {
+  users?: any[];
+}
+
+const TableUsers = ({ users }: TableUsersProps) => {
+  const usersList = users?.data || [];
   return (
     <table className="w-full text-sm">
       <thead>
@@ -9,39 +14,50 @@ const TableUsers = () => {
             #
           </th>
           <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
-            Número Venta
+            Nombre
           </th>
           <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
-            Fecha
+            Email
           </th>
           <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
-            Descripción
+            Telefono
           </th>
-          <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
-            Monto
-          </th>
+
           <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
             Estado
-          </th>
-          <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
-            Acciones
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr className="border-b border-gray-300/50 last:border-0 hover:bg-gray-500/20 transition">
-          <td className="px-3 py-3 text-gray-800/80 font-medium"></td>
-          <td className="px-3 py-3 text-gray-800/80 font-medium"></td>
-          <td className="px-3 py-3 text-gray-800/80 font-medium"></td>
-          <td className="px-3 py-3 text-gray-800/80"></td>
-          <td className="px-3 py-3 text-gray-800/80 font-bold"></td>
-          <td className="px-3 py-3"></td>
-          <td className="px-3 py-3">
-            <button className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition font-medium">
-              Ver Detalle
-            </button>
-          </td>
-        </tr>
+        {usersList?.map((user, index) => (
+          <tr
+            key={user.id}
+            className="border-b border-gray-300/50 last:border-0 hover:bg-gray-500/20 transition"
+          >
+            <td className="px-3 py-3 text-gray-800/80 font-medium">
+              {index + 1}
+            </td>
+            <td className="px-3 py-3 text-gray-800/80 font-medium">
+              {user.nombre} {user.apellido}
+            </td>
+            <td className="px-3 py-3 text-gray-800/80 font-medium">
+              {user.email}
+            </td>
+            <td className="px-3 py-3 text-gray-800/80">{user.telefono}</td>
+
+            <td className="px-3 py-3">
+              {user.activo ? (
+                <button className="px-2 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition font-medium">
+                  Activo
+                </button>
+              ) : (
+                <button className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium">
+                  Inactivo
+                </button>
+              )}
+            </td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );

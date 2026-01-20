@@ -1,6 +1,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getProductAllFn, getProductLowStockFn, getProductsFn, postProductFn, putChangeProductStatusFn, putProductFn } from "../api/products/apiProducts"
+import { getProductAllFn, getProductLowStockFn, getProductosForNameOrCodeFn, getProductsFn, patchUpdateProductStockFn, postProductFn, putChangeProductStatusFn, putProductFn } from "../api/products/apiProducts"
 
 interface ProductsParams {
     page?: number;
@@ -130,6 +130,30 @@ export const useProduct = (params?: ProductsParams) => {
         }
     })
 
+    //hook para acutalizar el stock de un producto
+    const usePatchUpdateProductStock = () => {
+        return useMutation({
+            mutationFn:patchUpdateProductStockFn,
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['products'] });
+                queryClient.invalidateQueries({ queryKey: ['lowStockProducts'] });
+            },
+            onError: (error) => {
+                console.error("Error al actualizar el stock del producto:", error);
+            }
+        });
+    }
+
+    //hook para buscar un producto por nombre o codigo de query params
+    const useGetProductsBySearch = (searchTerm: string) => {
+        return useQuery({
+            
+            queryKey: ['productsBySearch', searchTerm],
+            queryFn: () => getProductosForNameOrCodeFn(searchTerm),
+            enabled: !!searchTerm && searchTerm.length > 0,
+        });
+    }
+
     return {
         productos: isArrayResponse ? data : (data?.productos || []),
         total: isArrayResponse ? data?.length || 0 : (data?.total || 0),
@@ -154,7 +178,9 @@ export const useProduct = (params?: ProductsParams) => {
         putChangeProductStatus,
         lowStockProductsData,
         isLoadingLowStockProducts,
-        isErrorLowStockProducts
+        isErrorLowStockProducts,
+        usePatchUpdateProductStock,
+        useGetProductsBySearch,
 
     }
 }

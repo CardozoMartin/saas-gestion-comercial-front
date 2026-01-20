@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import FormUsers from '../components/Users/FormUsers';
 import TableUsers from '../components/Users/TableUsers';
+import { useUsers } from '../hooks/useUsers';
 
 const UsuariosPage = () => {
   const [showForm, setShowForm] = useState(false);
+
+  //hook para obtener todos los usuarios
+  const { useGetUsers } = useUsers();
+  const { data: usersData, isLoading, isError, refetch } = useGetUsers();
+  console.log("Usuarios obtenidos:", usersData);
   return (
     <div className="bg-white border border-gray-500/30 rounded-md p-6">
       <h2 className="text-2xl font-bold text-gray-800 ">Base de Clientes</h2>
@@ -16,7 +22,7 @@ const UsuariosPage = () => {
           {showForm ? "Cerrar Formulario" : "Agregar Cliente"}
         </button>
       </div>
-      {showForm ? <FormUsers /> : <TableUsers />}
+      {showForm ? <FormUsers /> : <TableUsers users={usersData} />}
     </div>
   )
 }

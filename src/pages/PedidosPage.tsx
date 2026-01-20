@@ -57,7 +57,8 @@ export default function CajaPage() {
   } = useForm({
     mode: "onBlur",
     defaultValues: {
-      montoInicial: "",
+      observaciones: "",
+      usuarioId: user?.userId || 0,
     },
   });
 
@@ -70,8 +71,10 @@ export default function CajaPage() {
   } = useForm({
     mode: "onBlur",
     defaultValues: {
-      montoFinalContado: "",
-      observaciones: "",
+      usuarioId: user?.userId || 0,
+      montoFinalContado: 0,
+      montoRetirado: 0,
+      fondoSiguienteCaja: 0,
     },
   });
 
@@ -95,8 +98,8 @@ export default function CajaPage() {
       if (result.isConfirmed) {
         postOpenBox(
           {
-            montoInicial: parseFloat(data.montoInicial),
             usuarioId: user?.userId,
+            observaciones: data.observaciones,
           },
           {
             onSuccess: () => {
@@ -142,8 +145,10 @@ export default function CajaPage() {
     }).then((result) => {
       if (result.isConfirmed) {
         const payload = {
+          usuarioId: user?.userId || 0,
           montoFinalContado: parseFloat(data.montoFinalContado),
-          observaciones: data.observaciones || null,
+          montoRetirado: parseFloat(data.montoRetirado),
+          fondoSiguienteCaja: parseFloat(data.fondoSiguienteCaja),
         };
 
         closeBox(

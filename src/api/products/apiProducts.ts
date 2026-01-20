@@ -72,3 +72,21 @@ export const getProductLowStockFn = async () =>{
         throw error;
     }
 }
+export const patchUpdateProductStockFn = async ({ id, newStock }: { id: number, newStock: number }) => {
+    try {
+        const response = await api.patch(`/productos/${id}/stock/`, { cantidad: newStock });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+export const getProductosForNameOrCodeFn = async (search: string) => {
+    try {
+        const response = await api.get('/productos/product/nameorcode', {
+            params: { search }  // Se convierte en ?search=valor
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

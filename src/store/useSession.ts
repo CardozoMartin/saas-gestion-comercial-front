@@ -45,7 +45,8 @@ const initializeAuth = (): AuthState => {
       user: {
         userId: decoded.id,
         email: decoded.email,
-        nombre: decoded.nombre
+        nombre: decoded.nombre,
+        rol: decoded.roles,
       },
       isLoggedIn: true,
       token,
