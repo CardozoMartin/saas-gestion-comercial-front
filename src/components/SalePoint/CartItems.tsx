@@ -9,6 +9,7 @@ interface CartItemData {
   unidadMedidaNombre: string;
   cantidad: number;
   stockActual: number;
+  unidadMedidaId: number;
 }
 
 interface CartItemsProps {
