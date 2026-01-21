@@ -10,7 +10,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUsers } from "../../hooks/useUsers";
 
@@ -30,7 +30,7 @@ const FormUsers = () => {
 
   //hook para crear usuario
   const { usePostUser } = useUsers();
-  const { mutate: postUser, isPending: isPostingUser } = usePostUser();
+  const { mutate: postUser } = usePostUser();
 
   const {
     register,

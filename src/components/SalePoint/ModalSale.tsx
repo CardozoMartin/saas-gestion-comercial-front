@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { X, Minus, Plus, ShoppingCart, AlertCircle, Loader2 } from 'lucide-react';
+import { X, ShoppingCart, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useSale } from '../../hooks/useSale';
 import { useSession } from '../../store/useSession';
 import { toast } from 'sonner';
 import { useCart } from '../../store/useCart';
-import { QueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface FinishSale {
     clienteId?: number;
     usuarioId?: number;
     tipoVenta: string;
-    descuento: number | 0;
+    descuento: number;
     observaciones?: string;
     subtotal: number;
     total: number;
@@ -22,22 +22,30 @@ interface FinishSale {
     }>;
 }
 
-export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
- 
+interface CartItem {
+  id: number;
+  nombre: string;
+  precioVenta: string | number;
+  cantidad: number;
+  unidadMedidaNombre: string;
+  unidadMedidaId?: number;
+}
+
+interface ModalSaleProps {
+  cart: CartItem[];
+  setCart?: (cart: CartItem[]) => void;
+  showModal: boolean;
+  setShowModal: (v: boolean) => void;
+}
+
+export default function ModalSale({ cart, showModal, setShowModal }: ModalSaleProps) {
+
   const [paymentMethod, setPaymentMethod] = useState('contado'); // Ya está en 'contado' (efectivo)
   const [moneyReceived, setMoneyReceived] = useState(0);
-  const { postSale, isPostingSale, isPostSaleError, postSaleError } = useSale();
+  const { postSale, isPostingSale } = useSale();
   const { user } = useSession();
   const {clearCart} = useCart();
-  const queryCliente = new QueryClient();
- 
-  // Efecto para manejar el éxito de la venta
-  useEffect(() => {
-    if (!isPostingSale && !isPostSaleError && postSale) {
-      // Aquí detectamos que la venta se completó exitosamente
-      // Puedes agregar una bandera en tu hook useSale para manejar esto mejor
-    }
-  }, [isPostingSale, isPostSaleError]);
+  const queryClient = useQueryClient();
 
   // Atajo: barra espaciadora para procesar la venta automáticamente si es EFECTIVO
   useEffect(() => {
@@ -68,11 +76,11 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [paymentMethod, isPostingSale, cart]);
 
-  const formatQuantity = (item, quantity) => {
+  const formatQuantity = (item: { unidadMedidaNombre: string }, quantity: number) => {
     return `${quantity.toFixed(3)} ${item.unidadMedidaNombre}${quantity > 1 ? 's' : ''}`;
   };
 
-  const subtotal = cart.reduce((acc, item) => acc + (parseFloat(item.precioVenta) * item.cantidad), 0);
+  const subtotal = cart.reduce((acc, item) => acc + (Number(item.precioVenta) * item.cantidad), 0);
   const total = subtotal;
   const cambio = Math.max(0, moneyReceived - total);
   const faltaPagar = Math.max(0, total - moneyReceived);
@@ -83,7 +91,7 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
     
     const saleData: FinishSale = {
       clienteId: undefined,
-      usuarioId: user?.userId,
+      usuarioId: user?.userId ? Number(user.userId) : undefined,
       tipoVenta: paymentMethod,
       descuento: 0,
       observaciones: "Venta realizada desde punto de venta",
@@ -91,9 +99,9 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
       total: total,
       detalles: cart.map((item) => ({
         productoId: item.id,
-        unidadMedidaId: item.unidadMedidaId,
+        unidadMedidaId: item.unidadMedidaId as number,
         cantidad: item.cantidad,
-        precioUnitario: parseFloat(item.precioVenta),
+        precioUnitario: Number(item.precioVenta),
       }))
     };
 
@@ -110,13 +118,13 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
       // Limpiar carrito y cerrar modal
       clearCart();
       //invalidamos la query para que se refresquen los productos
-      queryCliente.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       setShowModal(false);
       setMoneyReceived(0);
       
-    } catch (error) {
+    } catch (err: any) {
 
-        const errorDeCaja = error.response.data.error
+        const errorDeCaja = err?.response?.data?.error
        
         if(errorDeCaja === "No tienes una caja abierta. Abre una caja antes de registrar ventas."){
           toast.error('Error, Debes abrir una caja antes de registrar ventas', {
@@ -183,7 +191,7 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
                             {formatQuantity(item, item.cantidad)}
                           </p>
                           <p className="font-bold text-gray-800">
-                            ${(parseFloat(item.precioVenta) * item.cantidad).toFixed(2)}
+                            ${(Number(item.precioVenta) * item.cantidad).toFixed(2)}
                           </p>
                         </div>
                       </div>

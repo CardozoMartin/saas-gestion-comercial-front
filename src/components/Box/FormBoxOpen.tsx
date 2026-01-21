@@ -1,17 +1,13 @@
-import React from "react";
+
 
 interface FormBoxOpenProps {
   handleSubmitAbrir: (
     onSubmit: (data: { observaciones: string }) => void,
   ) => (e: React.FormEvent) => void;
   onSubmitAbrir: (data: { observaciones: string }) => void;
-  registerAbrir: (
-    name: string,
-    options?: Record<string, any>,
-  ) => React.InputHTMLAttributes<HTMLInputElement>;
-  errorsAbrir: {
-    [key: string]: { message: string } | undefined;
-  };
+  // Looser typing for react-hook-form register
+  registerAbrir: any;
+  errorsAbrir: any;
   isPostingBox: boolean;
 }
 

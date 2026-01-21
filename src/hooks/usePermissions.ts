@@ -4,7 +4,7 @@ import { canAccessRoute, ROLES } from '../config/permissions';
 export const usePermissions = () => {
   const { user } = useSession();
   
-  const userRole = user?.rol[0]?.nombre?.toLowerCase() || '';
+  const userRole = user?.rol?.[0]?.nombre?.toLowerCase() ?? '';
 
   const hasRole = (roles: string[]): boolean => {
     return roles.some(role => role.toLowerCase() === userRole);

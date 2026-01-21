@@ -23,7 +23,7 @@ export const useCategory = () => {
     })
     //useMutation para editar una categoria
     const { mutate: putCategory, isPending: isPuttingCategory, isError: isPutCategoryError } = useMutation({
-        mutationFn: putCategoryFn,
+        mutationFn: (variables: any) => putCategoryFn(variables.id, variables.data),
         onSuccess: (data) => {
             console.log("Category updated successfully:", data);
         },

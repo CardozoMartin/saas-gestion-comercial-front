@@ -10,7 +10,6 @@ const ProductosPage = () => {
 
   const { 
     productos, 
-    total, 
     totalPages, 
     hasNextPage, 
     hasPrevPage,

@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children, requiredRoles }: ProtectedRouteProps) => {
 
   // Si se especifican roles requeridos, verificar
   if (requiredRoles && requiredRoles.length > 0) {
-    const userRole = user.rol[0]?.nombre?.toLowerCase();
+    const userRole = user?.rol?.[0]?.nombre?.toLowerCase() ?? '';
     console.log('User Role:', userRole);
     const hasPermission = requiredRoles.some(role => 
       role.toLowerCase() === userRole
@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children, requiredRoles }: ProtectedRouteProps) => {
   }
 
   // También verificar por la ruta actual
-  const userRole = user.rol[0]?.nombre?.toLowerCase();
+  const userRole = user?.rol?.[0]?.nombre?.toLowerCase() ?? '';
   if (!canAccessRoute(userRole, location.pathname)) {
     return <Navigate to="/dashboard/acceso-denegado" replace />;
   }

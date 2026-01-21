@@ -1,4 +1,4 @@
-import React from "react";
+
 import { useLocation } from "react-router-dom";
 import { useCliente } from "../../hooks/useCliente";
 
@@ -131,7 +131,7 @@ const AccountDetails = () => {
             </thead>
             <tbody>
               {movimientos && movimientos.length > 0 ? (
-                movimientos.map((movimiento, index) => (
+                movimientos.map((movimiento: any, index: number) => (
                   <tr
                     key={movimiento.id}
                     className="border-b border-gray-300/50 last:border-0 hover:bg-gray-500/20 transition"

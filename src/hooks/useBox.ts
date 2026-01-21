@@ -11,7 +11,7 @@ export const useBox = () => {
         error: postBoxError,
     } = useMutation({
         mutationFn: postOpenBoxFn,
-        onSuccess: (data: any) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['boxByUser'] });
             queryClient.invalidateQueries({ queryKey: ['boxDetailByUser'] });
             queryClient.invalidateQueries({ queryKey: ['verifyOpenBoxByUser'] });

@@ -1,19 +1,18 @@
-import React from 'react'
 import { useBox } from '../hooks/useBox';
 import { useSession } from '../store/useSession';
 
 const VentasPage = () => {
-  const { user } = useSession()
+  const { user: _user } = useSession()
   const { useGetBoxesAll } = useBox();
 
-  const { data: boxesAll, isLoading, isError } = useGetBoxesAll();
+  const { data: boxesAll, isLoading: _isLoading, isError: _isError } = useGetBoxesAll();
   console.log("Cajas:", boxesAll);
 
 const boxAll = boxesAll?.data || [];
  
  
 
- const formatDate = (dateString) => {
+ const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleString('es-AR', {
@@ -25,11 +24,11 @@ const boxAll = boxesAll?.data || [];
     });
   };
 
-  const formatMoney = (amount) => {
+  const formatMoney = (amount: string | number) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
-    }).format(parseFloat(amount));
+    }).format(parseFloat(String(amount)));
   };
 
   return (
@@ -37,7 +36,7 @@ const boxAll = boxesAll?.data || [];
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Cajas Registradas</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {boxAll.map((box) => (
+        {boxAll.map((box: any) => (
           <div 
             key={box.id} 
             className="text-sm p-3 bg-white border border-gray-500/30 text-gray-800/80 rounded-md font-medium"
