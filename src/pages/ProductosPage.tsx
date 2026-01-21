@@ -1,17 +1,22 @@
-import React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import StyledTable from "../utils/Tables/Table";
-import { Eye, Plus, Table } from "lucide-react";
 import { useProduct } from "../hooks/useProduct";
 import TableProduct from "../components/Producto/TableProduct";
 
 const ProductosPage = () => {
   const Navigate = useNavigate();
-  const { AllProducts } = useProduct();
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
-  const Productos = AllProducts || [];
+  const { 
+    productos, 
+    total, 
+    totalPages, 
+    hasNextPage, 
+    hasPrevPage,
+    isLoading 
+  } = useProduct({ page, limit });
 
-  console.log(AllProducts);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -19,7 +24,7 @@ const ProductosPage = () => {
           Gestión de Productos
         </h2>
         <button
-          onClick={() => Navigate("/dashboard/productos/agregar")}
+          onClick={() => Navigate("/dashboard/agregar")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium"
         >
           + Agregar Producto
@@ -31,7 +36,15 @@ const ProductosPage = () => {
         </p>
         <div className="w-full  p-4 bg-white border border-gray-500/30 rounded-md">
           <div className="overflow-x-auto">
-           <TableProduct Productos={Productos} />
+           <TableProduct 
+              Productos={productos}
+              isLoading={isLoading}
+              currentPage={page}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPrevPage={hasPrevPage}
+              onPageChange={setPage}
+           />
           </div>
         </div>
       </div>

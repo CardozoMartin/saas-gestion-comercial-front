@@ -38,7 +38,7 @@ const UnitsPage = () => {
           </thead>
           <tbody>
              {units.map((unit, index) => (
-          <tr key={unit.id}>
+          <tr key={unit.id} className="border-b border-gray-300/70 hover:bg-gray-100/50">
             <td className="px-3 py-3 text-gray-800/80 font-medium">
               {index + 1}
             </td>

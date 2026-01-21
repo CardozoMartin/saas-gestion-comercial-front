@@ -8,7 +8,6 @@ const Producto = () => {
 
   const { AllProducts } = useProduct();
 
-  console.log(AllProducts);
   return (
     <div className="bg-white border border-gray-500/30 rounded-md p-6">
       <div className="flex items-center justify-between mb-6">

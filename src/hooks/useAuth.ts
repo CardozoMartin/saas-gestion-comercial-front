@@ -8,6 +8,7 @@ import type {
   LoginResponse,
   ApiError,
 } from "../types/auth.types";
+import { use } from "react";
 
 export const useAuth = () => {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ export const useAuth = () => {
 
       // Guardar sesión en el store
       setSession(data.user, data.token);
+    
     },
     onError: (error) => {
       console.error("Login failed:", error);

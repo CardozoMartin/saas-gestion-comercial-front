@@ -1,14 +1,18 @@
 // src/types/auth.types.ts
 export interface DecodedToken {
-  userId: string;
+  id: string;
   email: string;
   exp: number;
   iat?: number;
+  nombre?: string;
+  roles?: Array<{ nombre: string }>;
 }
 
 export interface User {
   userId: string;
   email: string;
+  nombre?: string;
+  rol?: Array<{ nombre: string }>;
 }
 
 export interface AuthState {

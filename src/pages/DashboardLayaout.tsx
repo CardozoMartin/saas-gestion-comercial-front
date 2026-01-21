@@ -1,19 +1,13 @@
 import {
-  BrowserRouter,
-  Route,
-  Routes,
   Outlet,
   useNavigate,
   useLocation,
 } from "react-router-dom";
 import {
-  TrendingUp,
   Users,
   ShoppingCart,
-  DollarSign,
   BarChart3,
   Package,
-  Calendar,
   Settings,
   LogOut,
   Home,
@@ -22,86 +16,183 @@ import {
   Menu,
   X,
   Ruler,
+  CreditCard,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
+import { useSession } from "../store/useSession";
+import { usePermissions } from "../hooks/usePermissions";
+import Swal from "sweetalert2";
 
 // Layout del Dashboard
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
-  const menuItems = [
-    { id: "dashboard", name: "Dashboard", icon: Home, path: "/dashboard" },
+  const { user, logout } = useSession();
+  const { canAccess, userRole } = usePermissions();
+  
+  useGlobalShortcuts();
+  useEffect(() => {
+    if (user) {
+      setIsLoading(false);
+    }
+  }, [user]);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+  // Define todos los menús con sus roles permitidos
+  const allMenuItems = [
+    { 
+      id: "dashboard", 
+      name: "Dashboard", 
+      icon: Home, 
+      path: "/dashboard",
+      roles: ['admin', 'vendedor']
+    },
     {
-      id: "products",
-      name: "Productos",
-      icon: Package,
-      path: "/dashboard/productos",
+      id: "pos",
+      name: "Punto de Venta",
+      icon: CreditCard,
+      path: "/dashboard/punto-venta",
+      roles: ['admin', 'vendedor', 'cajero']
     },
     {
       id: "sales",
       name: "Ventas",
       icon: ShoppingCart,
       path: "/dashboard/ventas",
+      roles: ['admin', 'vendedor', 'cajero']
+    },
+    {
+      id: "products",
+      name: "Productos",
+      icon: Package,
+      path: "/dashboard/productos",
+      roles: ['admin']
     },
     {
       id: "customers",
       name: "Clientes",
       icon: Users,
       path: "/dashboard/clientes",
+      roles: ['admin', 'cajero']
     },
     {
       id: "orders",
-      name: "Pedidos",
+      name: "Cajas",
       icon: FileText,
       path: "/dashboard/pedidos",
+      roles: ['admin', 'vendedor']
     },
     {
       id: "categories",
       name: "Categorías",
       icon: Tag,
       path: "/dashboard/categorias",
-    },
-    {
-      id: "analytics",
-      name: "Análisis",
-      icon: BarChart3,
-      path: "/dashboard/analytics",
-    },
-    {
-      id: "settings",
-      name: "Configuración",
-      icon: Settings,
-      path: "/dashboard/configuracion",
+      roles: ['admin']
     },
     {
       id: "units",
       name: "Unidades",
       icon: Ruler,
       path: "/dashboard/unidades",
+      roles: ['admin']
+    },
+    {
+      id: "analytics",
+      name: "Análisis",
+      icon: BarChart3,
+      path: "/dashboard/analytics",
+      roles: ['admin']
+    },
+    {
+      id: "settings",
+      name: "Usuarios",
+      icon: Settings,
+      path: "/dashboard/usuarios",
+      roles: ['admin']
+    },
+     {
+      id: "update-stock",
+      name: "Actualizar Stock",
+      icon: Settings,
+      path: "/dashboard/update-stock",
+      roles: ['admin']
     },
   ];
 
+  // Filtrar menús según los permisos del usuario
+  const menuItems = allMenuItems.filter(item => canAccess(item.path));
+
   const handleLogout = () => {
-    // Aquí implementarías tu lógica de logout real
-    navigate("/login");
+    Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: "¿Estás seguro de que deseas cerrar sesión?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        navigate("/login");
+        
+      }
+    });
+  }
+
+
+  // Función para obtener el label del rol
+  const getRoleLabel = (role: string) => {
+    const roleLabels: Record<string, string> = {
+      'admin': 'Administrador',
+      'vendedor': 'Vendedor',
+      'cajero': 'Cajero'
+    };
+    return roleLabels[role.toLowerCase()] || role;
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      {/* Sidebar - Expandido o Compacto */}
       <aside
         className={`${
-          sidebarOpen ? "w-64" : "w-0"
-        } bg-white border-r border-gray-500/30 transition-all duration-300 overflow-hidden`}
+          sidebarOpen ? "w-64" : "w-20"
+        } bg-white border-r border-gray-500/30 transition-all duration-300 flex flex-col`}
       >
-        <div className="p-6 border-b border-gray-500/30">
-          <h1 className="text-xl font-bold text-gray-800">Sistema Ventas</h1>
-          <p className="text-xs text-gray-600 mt-1">Panel de Control</p>
+        {/* Header del Sidebar */}
+        <div className={`p-6 border-b border-gray-500/30 flex-shrink-0 ${!sidebarOpen && 'px-4'}`}>
+          {sidebarOpen ? (
+            <>
+              <h1 className="text-xl font-bold text-gray-800">Sistema Ventas</h1>
+              <p className="text-xs text-gray-600 mt-1">Panel de Control</p>
+              {/* Mostrar rol del usuario */}
+              <div className="mt-2 inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                {getRoleLabel(userRole)}
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-center">
+              <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-white font-bold">
+                SV
+              </div>
+            </div>
+          )}
         </div>
 
-        <nav className="p-4">
+        {/* Navegación */}
+        <nav className="p-4 flex-1 overflow-y-auto">
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -113,14 +204,17 @@ const DashboardLayout = () => {
                 <li key={item.id}>
                   <button
                     onClick={() => navigate(item.path)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition ${
+                    className={`w-full flex items-center ${
+                      sidebarOpen ? 'gap-3 px-3' : 'justify-center px-0'
+                    } py-2.5 rounded-md text-sm font-medium transition ${
                       isActive
                         ? "bg-gray-500/20 text-gray-800"
                         : "text-gray-700 hover:bg-gray-500/10"
                     }`}
+                    title={!sidebarOpen ? item.name : undefined}
                   >
                     <Icon size={18} strokeWidth={2} />
-                    <span>{item.name}</span>
+                    {sidebarOpen && <span>{item.name}</span>}
                   </button>
                 </li>
               );
@@ -128,21 +222,25 @@ const DashboardLayout = () => {
           </ul>
         </nav>
 
-        <div className="absolute bottom-0 w-64 p-4 border-t border-gray-500/30">
+        {/* Botón de logout */}
+        <div className="p-4 border-t border-gray-500/30 flex-shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-red-600/80 hover:bg-red-600/10 transition"
+            className={`w-full flex items-center ${
+              sidebarOpen ? 'gap-3 px-3' : 'justify-center px-0'
+            } py-2.5 rounded-md text-sm font-medium text-red-600/80 hover:bg-red-600/10 transition`}
+            title={!sidebarOpen ? "Cerrar Sesión" : undefined}
           >
             <LogOut size={18} />
-            <span>Cerrar Sesión</span>
+            {sidebarOpen && <span>Cerrar Sesión</span>}
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b border-gray-500/30 px-6 py-4 sticky top-0 z-10">
+        <header className="bg-white border-b border-gray-500/30 px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -154,23 +252,26 @@ const DashboardLayout = () => {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-800">
-                  Admin Usuario
+                  {user?.nombre || "Usuario"}
                 </p>
-                <p className="text-xs text-gray-600">admin@ventas.com</p>
+                <p className="text-xs text-gray-600">
+                  {user?.email || ""}
+                </p>
               </div>
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                A
+                {user?.nombre?.charAt(0).toUpperCase() || "U"}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Content - Aquí se renderizan las rutas hijas */}
-        <div className="p-6">
+        {/* Content - SOLO ESTA ÁREA tiene scroll */}
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
+
 export default DashboardLayout;

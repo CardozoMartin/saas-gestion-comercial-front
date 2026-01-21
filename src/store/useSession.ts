@@ -27,6 +27,7 @@ const initializeAuth = (): AuthState => {
 
   try {
     const decoded = jwtDecode<DecodedToken>(token);
+    console.log("Decoded token:", decoded);
 
     // Verificar si el token ha expirado
     if (!decoded.exp || isTokenExpired(decoded.exp)) {
@@ -42,8 +43,10 @@ const initializeAuth = (): AuthState => {
     // Token válido
     return {
       user: {
-        userId: decoded.userId,
+        userId: decoded.id,
         email: decoded.email,
+        nombre: decoded.nombre,
+        rol: decoded.roles,
       },
       isLoggedIn: true,
       token,
@@ -70,8 +73,24 @@ export const useSession = create<SessionStore>((set) => ({
 
   login: (userData: User, token: string) => {
     sessionStorage.setItem(STORAGE_KEY, token);
+
+    // Combine provided userData with decoded token payload so we have
+    // `nombre` and `rol` available immediately after login (no refresh needed)
+    let finalUser: User = userData;
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      finalUser = {
+        userId: decoded.id || userData.userId,
+        email: decoded.email || userData.email,
+        nombre: decoded.nombre || (userData as any).nombre,
+        rol: decoded.roles || (userData as any).rol,
+      } as User;
+    } catch (err) {
+      console.warn("Failed to decode token during login:", err);
+    }
+
     set({
-      user: userData,
+      user: finalUser,
       isLoggedIn: true,
       token,
     });
