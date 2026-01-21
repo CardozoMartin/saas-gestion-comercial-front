@@ -39,6 +39,7 @@ const PointSale = () => {
   });
 
   const { allProductsData } = useProduct();
+  console.log("Productos obtenidos:", allProductsData);
   const {
     cart,
     addToCart: addToCartStore,
@@ -252,6 +253,7 @@ const PointSale = () => {
     : [];
 
   const addToCart = (producto: Product, cantidadCustom: number | null = null) => {
+    console.log("Agregando al carrito:", producto);
     const cantidad = cantidadCustom !== null ? cantidadCustom : 1;
     addToCartStore({
       id: producto.id,
