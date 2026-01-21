@@ -9,6 +9,9 @@ import CartItems from "../components/SalePoint/CartItems";
 import SearchBar from "../components/SalePoint/SearchBar";
 import ProductCard from "../components/SalePoint/ProductCard";
 import { useSession } from "../store/useSession";
+import { useSale } from "../hooks/useSale";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PointSale = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +21,14 @@ const PointSale = () => {
   const [showModal, setShowModal] = useState(false);
   const [showCuentaCorrienteModal, setShowCuentaCorrienteModal] = useState(false);
 
+  // Toggle para permitir/desactivar la venta automática con Space (persistente)
+  const [autoSpaceEnabled, setAutoSpaceEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('pos.autoSpace');
+    return saved === null ? true : saved === 'true';
+  });
+
   const { allProductsData } = useProduct();
+  console.log("allProductsData:", allProductsData);
   const {
     cart,
     addToCart: addToCartStore,
@@ -27,7 +37,8 @@ const PointSale = () => {
     updateQuantity,
   } = useCart();
    const { user } = useSession();
-    console.log("Usuario en DashboardLayout:", user);
+  const { postSale, isPostingSale } = useSale();
+  const queryClient = useQueryClient();
 
   const cartItems = cart;
 
@@ -76,6 +87,16 @@ const PointSale = () => {
     f7: () => agregarProductoRapido("Cigarrillos"),
     f8: () => agregarProductoRapido("Pan"),
     f9: () => agregarProductoRapido("Leche"),
+    // Tecla Space: procesar venta automáticamente en efectivo (sólo si está activado)
+    ' ': () => {
+      if (!autoSpaceEnabled) {
+        toast.toast && toast.toast("Auto-space desactivado");
+        return;
+      }
+      if (cartItems.length > 0) {
+        processSaleAuto();
+      }
+    },
     "+": () => {
       if (cartItems.length > 0) {
         const ultimoItem = cartItems[cartItems.length - 1];
@@ -95,6 +116,46 @@ const PointSale = () => {
       }
     },
   });
+
+  // Procesar venta automática con Space (solo efectivo)
+  const processSaleAuto = async () => {
+    if (cartItems.length === 0) return;
+    if (isPostingSale) {
+      toast.warning("Ya se está procesando una venta");
+      return;
+    }
+
+    const saleData = {
+      clienteId: undefined,
+      usuarioId: user?.userId,
+      tipoVenta: "contado",
+      descuento: 0,
+      observaciones: "Venta automática con tecla Space",
+      subtotal: subtotal,
+      total: total,
+      detalles: cartItems.map((item) => ({
+        productoId: item.id,
+        unidadMedidaId: item.unidadMedidaId,
+        cantidad: item.cantidad,
+        precioUnitario: parseFloat(item.precioVenta),
+      })),
+    };
+
+    try {
+      await postSale(saleData);
+      toast.success(`Venta procesada: $${total.toFixed(2)}`);
+      clearCart();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    } catch (err: any) {
+      const errorDeCaja = err?.response?.data?.error;
+      if (errorDeCaja === "No tienes una caja abierta. Abre una caja antes de registrar ventas.") {
+        toast.error('Debes abrir una caja antes de registrar ventas');
+        return;
+      }
+      toast.error('Error al procesar la venta automática');
+      console.error(err);
+    }
+  };
 
   const showNotification = (message, type = "success") => {
     console.log(`[${type.toUpperCase()}] ${message}`);
@@ -149,7 +210,7 @@ const PointSale = () => {
 
   const addToCart = (producto, cantidadCustom = null) => {
     const cantidad = cantidadCustom !== null ? cantidadCustom : 1;
-
+    console.log("producto a agregar:", producto, "cantidad:", cantidad);
     addToCartStore({
       id: producto.id,
       nombre: producto.nombre,
@@ -274,9 +335,29 @@ const PointSale = () => {
           <h1 className="text-2xl font-bold text-gray-800">Punto de Venta</h1>
           <p className="text-sm text-gray-600 mt-1">Registra una nueva venta</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <ShoppingCart size={18} />
-          <span>{cartItems.length} productos en carrito</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <ShoppingCart size={18} />
+            <span>{cartItems.length} productos en carrito</span>
+          </div>
+
+          {/* Toggle Auto Space */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Auto Space</label>
+            <button
+              onClick={() => {
+                setAutoSpaceEnabled((v) => {
+                  const nv = !v;
+                  localStorage.setItem('pos.autoSpace', String(nv));
+                  return nv;
+                });
+              }}
+              className={`px-3 py-1 rounded-full text-sm font-medium transition ${autoSpaceEnabled ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+              title={autoSpaceEnabled ? 'Auto-space activado' : 'Auto-space desactivado'}
+            >
+              {autoSpaceEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -39,6 +39,35 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
     }
   }, [isPostingSale, isPostSaleError]);
 
+  // Atajo: barra espaciadora para procesar la venta automáticamente si es EFECTIVO
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isSpace = e.code === 'Space' || e.key === ' ';
+      if (!isSpace) return;
+
+      // No ejecutar si un input/textarea/select está enfocado
+      const active = document.activeElement as HTMLElement | null;
+      const tag = active?.tagName;
+      const isTextInput = !!(
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        active?.getAttribute('contenteditable') === 'true'
+      );
+      if (isTextInput) return;
+
+      if (paymentMethod === 'contado' && !isPostingSale && cart.length > 0) {
+        e.preventDefault();
+        // Confirmación de seguridad: evitar ejecutar la venta accidentalmente con Space
+        if (confirm('¿Procesar venta en efectivo?')) {
+          handleProcessSale();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [paymentMethod, isPostingSale, cart]);
+
   const formatQuantity = (item, quantity) => {
     return `${quantity.toFixed(3)} ${item.unidadMedidaNombre}${quantity > 1 ? 's' : ''}`;
   };
@@ -51,7 +80,7 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
   const handleProcessSale = async () => {
     // Removida la validación obligatoria del monto recibido
     // Ya no es necesario que moneyReceived >= total para efectivo
-
+    
     const saleData: FinishSale = {
       clienteId: undefined,
       usuarioId: user?.userId,
@@ -242,6 +271,9 @@ export default function ModalSale({ cart, setCart, showModal, setShowModal }) {
                 </div>
 
                 {/* Botones de acción */}
+                {paymentMethod === 'contado' && (
+                  <div className="mb-2 text-sm text-gray-500">Presiona <kbd className="bg-gray-100 px-2 py-1 rounded">Space</kbd> para procesar la venta en efectivo</div>
+                )}
                 <div className="space-y-2 pt-2">
                   <button
                     onClick={handleProcessSale}

@@ -1,170 +1,175 @@
 // src/App.tsx
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import RoutesPublic from "./routes/RoutesPublic";
 import RoutesPrivate from "./routes/RoutesPrivate";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { ROLES } from "./config/permissions";
+
+// Solo cargar estas páginas críticas al inicio
 import LoginPage from "./pages/LoginPage";
 import DashboardLayout from "./pages/DashboardLayaout";
-import DashboardHome from "./pages/DashboardHome";
-import ProductosPage from "./pages/ProductosPage";
-import FormProducto from "./components/Producto/FormProducto";
-import VentasPage from "./pages/VentasPage";
-import ClientesPage from "./pages/ClientesPage";
-import PedidosPage from "./pages/PedidosPage";
-import CategoriasPage from "./pages/CategoriasPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import UsuariosPage from "./pages/UsuariosPage";
-import UnitsPage from "./pages/UnitsPage";
-import PointSale from "./pages/PointSale";
-import AccounteDetails from "./components/Cliente/AccounteDetails";
-import { ROLES } from "./config/permissions";
-import PageUpdateStock from "./pages/PageUpdateStock";
+
+// Lazy load del resto de páginas
+const DashboardHome = lazy(() => import("./pages/DashboardHome"));
+const ProductosPage = lazy(() => import("./pages/ProductosPage"));
+const FormProducto = lazy(() => import("./components/Producto/FormProducto"));
+const VentasPage = lazy(() => import("./pages/VentasPage"));
+const ClientesPage = lazy(() => import("./pages/ClientesPage"));
+const PedidosPage = lazy(() => import("./pages/PedidosPage"));
+const CategoriasPage = lazy(() => import("./pages/CategoriasPage"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const UsuariosPage = lazy(() => import("./pages/UsuariosPage"));
+const UnitsPage = lazy(() => import("./pages/UnitsPage"));
+const PointSale = lazy(() => import("./pages/PointSale"));
+const AccounteDetails = lazy(() => import("./components/Cliente/AccounteDetails"));
+const PageUpdateStock = lazy(() => import("./pages/PageUpdateStock"));
+
+// Componente de carga
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Cargando...</p>
+    </div>
+  </div>
+);
 
 const App = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Rutas públicas */}
-        <Route element={<RoutesPublic />}>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/login" element={<LoginPage />} />
-        </Route>
-
-        {/* Rutas privadas */}
-        <Route element={<RoutesPrivate />}>
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<DashboardHome />} />
-            
-            {/* Productos - Admin y Vendedor */}
-            <Route 
-              path="productos" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO]}>
-                  <ProductosPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Agregar producto - Solo Admin */}
-            <Route 
-              path="agregar" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO]}>
-                  <FormProducto />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Ventas - Todos */}
-            <Route 
-              path="ventas" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.VENDEDOR, ROLES.CAJERO]}>
-                  <VentasPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Clientes - Admin y Vendedor */}
-            <Route 
-              path="clientes" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO]}>
-                  <ClientesPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Pedidos - Admin y Vendedor */}
-            <Route 
-              path="pedidos" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO]}>
-                  <PedidosPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Categorías - Solo Admin */}
-            <Route 
-              path="categorias" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
-                  <CategoriasPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Analytics - Solo Admin */}
-            <Route 
-              path="analytics" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
-                  <AnalyticsPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Usuarios - Solo Admin */}
-            <Route 
-              path="usuarios" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
-                  <UsuariosPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Unidades - Solo Admin */}
-            <Route 
-              path="unidades" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
-                  <UnitsPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Punto de Venta - Admin y Cajero */}
-            <Route 
-              path="punto-venta" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO, ROLES.VENDEDOR]}>
-                  <PointSale />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Account Details - Todos */}
-            <Route 
-              path="account-details" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.VENDEDOR, ROLES.CAJERO]}>
-                  <AccounteDetails />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="update-stock" 
-              element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.VENDEDOR, ROLES.CAJERO]}>
-                  <PageUpdateStock  />
-                </ProtectedRoute>
-              } 
-            />
-
-            {/* Página de acceso denegado */}
-            <Route path="acceso-denegado" element={<AccessDenied />} />
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          {/* Rutas públicas */}
+          <Route element={<RoutesPublic />}>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
           </Route>
-        </Route>
 
-        {/* Ruta 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* Rutas privadas */}
+          <Route element={<RoutesPrivate />}>
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<DashboardHome />} />
+              
+              <Route 
+                path="productos" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                    <ProductosPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="agregar" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO]}>
+                    <FormProducto />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="ventas" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.VENDEDOR, ROLES.CAJERO]}>
+                    <VentasPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="clientes" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO]}>
+                    <ClientesPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="pedidos" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO]}>
+                    <PedidosPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="categorias" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                    <CategoriasPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="analytics" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                    <AnalyticsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="usuarios" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                    <UsuariosPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="unidades" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                    <UnitsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="punto-venta" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.CAJERO, ROLES.VENDEDOR]}>
+                    <PointSale />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="account-details" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.VENDEDOR, ROLES.CAJERO]}>
+                    <AccounteDetails />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="update-stock" 
+                element={
+                  <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.VENDEDOR, ROLES.CAJERO]}>
+                    <PageUpdateStock />
+                  </ProtectedRoute>
+                } 
+              />
+
+              <Route path="acceso-denegado" element={<AccessDenied />} />
+            </Route>
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 };
-// Componente de Acceso Denegado
+
 const AccessDenied = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
     <div className="text-center p-8 bg-white rounded-lg shadow-md">
@@ -183,7 +188,6 @@ const AccessDenied = () => (
   </div>
 );
 
-// Componente para 404
 const NotFound = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="text-center">

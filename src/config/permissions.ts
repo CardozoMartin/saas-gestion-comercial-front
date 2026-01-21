@@ -10,7 +10,7 @@ export type Role = typeof ROLES[keyof typeof ROLES];
 // Define qué rutas puede acceder cada rol
 export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   '/dashboard': [ROLES.ADMIN],
-  '/dashboard/productos': [ROLES.ADMIN, ROLES.CAJERO],
+  '/dashboard/productos': [ROLES.ADMIN],
   '/dashboard/agregar': [ROLES.ADMIN],
   '/dashboard/ventas': [ROLES.ADMIN],
   '/dashboard/clientes': [ROLES.ADMIN, ROLES.CAJERO],

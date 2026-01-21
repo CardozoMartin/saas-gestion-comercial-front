@@ -9,6 +9,7 @@ interface Product {
   precioVenta: string;
   unidadMedidaNombre: string;
   stockActual: number;
+  unidadMedidaId: number;
 }
 
 interface ProductCardProps {

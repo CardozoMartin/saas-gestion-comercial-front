@@ -18,21 +18,37 @@ import {
   Ruler,
   CreditCard,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
 import { useSession } from "../store/useSession";
 import { usePermissions } from "../hooks/usePermissions";
+import Swal from "sweetalert2";
 
 // Layout del Dashboard
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useSession();
   const { canAccess, userRole } = usePermissions();
   
   useGlobalShortcuts();
-  
+  useEffect(() => {
+    if (user) {
+      setIsLoading(false);
+    }
+  }, [user]);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
   // Define todos los menús con sus roles permitidos
   const allMenuItems = [
     { 
@@ -61,7 +77,7 @@ const DashboardLayout = () => {
       name: "Productos",
       icon: Package,
       path: "/dashboard/productos",
-      roles: ['admin', 'cajero']
+      roles: ['admin']
     },
     {
       id: "customers",
@@ -118,9 +134,24 @@ const DashboardLayout = () => {
   const menuItems = allMenuItems.filter(item => canAccess(item.path));
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+    Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: "¿Estás seguro de que deseas cerrar sesión?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        navigate("/login");
+        
+      }
+    });
+  }
+
 
   // Función para obtener el label del rol
   const getRoleLabel = (role: string) => {
