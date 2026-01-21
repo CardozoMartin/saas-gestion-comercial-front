@@ -12,6 +12,8 @@ interface Product {
   unidadMedidaId: number;
 }
 
+import { RefObject } from 'react';
+
 interface ProductCardProps {
   producto: Product;
   isSelected: boolean;
@@ -28,6 +30,7 @@ interface ProductCardProps {
   onInputValueChange?: (value: string) => void;
   onCancel?: () => void;
   onConfirm?: () => void;
+  inputRef?: RefObject<HTMLInputElement>;
 }
 
 const ProductCard = ({
@@ -42,6 +45,7 @@ const ProductCard = ({
   onInputValueChange,
   onCancel,
   onConfirm,
+  inputRef,
 }: ProductCardProps) => {
   return (
     <div
@@ -87,6 +91,7 @@ const ProductCard = ({
           onInputValueChange={onInputValueChange!}
           onCancel={onCancel!}
           onConfirm={onConfirm!}
+          inputRef={inputRef}
         />
       ) : (
         <button

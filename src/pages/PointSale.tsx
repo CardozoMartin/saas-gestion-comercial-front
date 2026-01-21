@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Search, ShoppingCart } from "lucide-react";
 import { useProduct } from "../hooks/useProduct";
 import { useCart } from "../store/useCart";
@@ -41,6 +41,9 @@ const PointSale = () => {
   const queryClient = useQueryClient();
 
   const cartItems = cart;
+
+  // Ref al input del producto por peso/volumen para enfocar desde atajos
+  const weightInputRef = useRef<HTMLInputElement | null>(null);
 
   // ATAJOS DE TECLADO
   useShortcuts({
@@ -87,6 +90,22 @@ const PointSale = () => {
     f7: () => agregarProductoRapido("Cigarrillos"),
     f8: () => agregarProductoRapido("Pan"),
     f9: () => agregarProductoRapido("Leche"),
+    // Atajos para productos por peso/volumen: 'c' = cantidad, 'm' = monto (foco en input)
+    c: () => {
+      if (selectedProduct && isWeightVolumeSale(selectedProduct.unidadMedidaNombre)) {
+        setInputType("cantidad");
+        setInputValue("");
+        // esperar al re-render y enfocar
+        setTimeout(() => weightInputRef.current?.focus(), 50);
+      }
+    },
+    m: () => {
+      if (selectedProduct && isWeightVolumeSale(selectedProduct.unidadMedidaNombre)) {
+        setInputType("monto");
+        setInputValue("");
+        setTimeout(() => weightInputRef.current?.focus(), 50);
+      }
+    },
     // Tecla Space: procesar venta automáticamente en efectivo (sólo si está activado)
     ' ': () => {
       if (!autoSpaceEnabled) {
@@ -416,6 +435,7 @@ const PointSale = () => {
                         onInputValueChange={setInputValue}
                         onCancel={() => setSelectedProduct(null)}
                         onConfirm={handleWeightConfirm}
+                        inputRef={weightInputRef}
                       />
                     );
                   })}
