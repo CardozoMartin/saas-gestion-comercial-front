@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCategory } from "../hooks/useCategory";
-import { Table } from "lucide-react";
+
 import TableCategory from "../components/Category/TableCategory";
 
 const CategoriasPage = () => {

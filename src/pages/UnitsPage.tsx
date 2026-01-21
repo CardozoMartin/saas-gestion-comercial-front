@@ -1,12 +1,11 @@
-import React from 'react'
+
 import { useUnits } from '../hooks/useUnits'
 import { Eye } from 'lucide-react'
 
 const UnitsPage = () => {
 
-    const {units, isLoading, isError, refetch} = useUnits()
+    const { units, isLoading } = useUnits()
 
-    const loadedUnits = isLoading ? [] : units || []
 
     if(isLoading){
         return <div>Cargando unidades...</div>
@@ -37,7 +36,7 @@ const UnitsPage = () => {
             </tr>
           </thead>
           <tbody>
-             {units.map((unit, index) => (
+             {units.map((unit: any, index: number) => (
           <tr key={unit.id} className="border-b border-gray-300/70 hover:bg-gray-100/50">
             <td className="px-3 py-3 text-gray-800/80 font-medium">
               {index + 1}

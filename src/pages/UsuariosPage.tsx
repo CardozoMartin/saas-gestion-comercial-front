@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 import FormUsers from '../components/Users/FormUsers';
 import TableUsers from '../components/Users/TableUsers';
 import { useUsers } from '../hooks/useUsers';
@@ -8,7 +8,7 @@ const UsuariosPage = () => {
 
   //hook para obtener todos los usuarios
   const { useGetUsers } = useUsers();
-  const { data: usersData, isLoading, isError, refetch } = useGetUsers();
+  const { data: usersData } = useGetUsers();
   console.log("Usuarios obtenidos:", usersData);
   return (
     <div className="bg-white border border-gray-500/30 rounded-md p-6">

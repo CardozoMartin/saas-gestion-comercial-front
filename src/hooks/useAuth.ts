@@ -1,6 +1,5 @@
 // src/hooks/useAuth.ts
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { postLoginFn } from "../api/auth/auth";
 import { useSession } from "../store/useSession";
 import type {
@@ -8,10 +7,8 @@ import type {
   LoginResponse,
   ApiError,
 } from "../types/auth.types";
-import { use } from "react";
 
 export const useAuth = () => {
-  const navigate = useNavigate();
   const { login: setSession } = useSession();
 
   const {

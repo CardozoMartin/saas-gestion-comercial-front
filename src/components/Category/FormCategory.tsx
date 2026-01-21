@@ -5,9 +5,7 @@ import type { Category } from '../../types/category.types';
 
 export default function FormCategory() {
 
-    const { postCategory,
-        isPostingCategory,
-        isPostCategoryError} = useCategory()
+    const { postCategory } = useCategory()
     const {
         register,
         handleSubmit,
@@ -67,7 +65,7 @@ export default function FormCategory() {
                                 ? 'border-red-400 focus:border-red-500' 
                                 : 'border-gray-500/30 focus:border-gray-500/50'
                         } rounded-md text-gray-800 outline-none resize-none transition`}
-                        rows="3"
+                        rows={3}
                         {...register('descripcion', {
                             required: 'La descripción es requerida',
                             minLength: {

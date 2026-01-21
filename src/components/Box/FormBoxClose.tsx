@@ -1,4 +1,4 @@
-import React from "react";
+
 
 interface FormBoxCloseProps {
   handleSubmitCerrar: (
@@ -11,13 +11,9 @@ interface FormBoxCloseProps {
     montoFinalContado: number;
     observaciones?: string;
   }) => void;
-  registerCerrar: (
-    name: string,
-    options?: Record<string, any>,
-  ) => React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>;
-  errorsCerrar: {
-    [key: string]: { message: string } | undefined;
-  };
+  // Looser typing for react-hook-form register
+  registerCerrar: any;
+  errorsCerrar: any;
   montoFinalContado: number;
   montoEsperado: number;
   diferencia: number;

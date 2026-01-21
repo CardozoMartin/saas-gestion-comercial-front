@@ -15,7 +15,7 @@ interface ProductsParams {
 export const useProduct = (params?: ProductsParams) => {
     const queryClient = useQueryClient()
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError } = useQuery<any>({
         queryKey: ['products', params],
         queryFn: () => getProductsFn(params)
     })
@@ -25,15 +25,13 @@ export const useProduct = (params?: ProductsParams) => {
         queryKey: ['lowStockProducts'],
         queryFn: () => getProductLowStockFn(),
         staleTime: 5 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
     })
 
-    const { data: allProductsData, isLoading: isLoadingAllProducts, isError: isErrorAllProducts } = useQuery({
+    const { data: allProductsData, isLoading: isLoadingAllProducts, isError: isErrorAllProducts } = useQuery<any>({
         queryKey: ['allProducts'],
         queryFn: () => getProductAllFn(),
         staleTime: 5 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
     })
 
@@ -115,7 +113,7 @@ export const useProduct = (params?: ProductsParams) => {
         },
         
         // Si hay error - revertir cambios
-        onError: (error: any, productId, context) => {
+        onError: (error: any, _productId, context) => {
             console.error("Error al cambiar el estado del producto:", error)
             
             // Revertir al estado anterior

@@ -5,8 +5,8 @@ import Swal from 'sweetalert2';
 const PageUpdateStock = () => {
   const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [stockInputs, setStockInputs] = useState({});
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [stockInputs, setStockInputs] = useState<Record<number, string>>({});
 
   // Hook para buscar productos
   const { useGetProductsBySearch, usePatchUpdateProductStock } = useProduct();
@@ -17,15 +17,15 @@ const PageUpdateStock = () => {
     setSearchTerm(inputValue);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e as any).key === 'Enter') {
       handleSearch();
     }
   };
 
-  const handleEditStock = (id, currentStock) => {
+  const handleEditStock = (id: number, _currentStock?: number) => {
     setEditingId(id);
-    setStockInputs({ ...stockInputs, [id]: 0 }); // Empieza en 0 para incrementar
+    setStockInputs({ ...stockInputs, [id]: '0' }); // Empieza en '0' para incrementar
   };
 
   const handleCancelEdit = () => {
@@ -33,7 +33,7 @@ const PageUpdateStock = () => {
     setStockInputs({});
   };
 
-  const handleSaveStock = async (id) => {
+  const handleSaveStock = async (id: number) => {
     const cantidadAIncrementar = Number(stockInputs[id]) || 0;
     
     if (cantidadAIncrementar === 0) {
@@ -77,7 +77,7 @@ const PageUpdateStock = () => {
     }
   };
 
-  const handleStockChange = (id, value) => {
+  const handleStockChange = (id: number, value: string) => {
     setStockInputs({ ...stockInputs, [id]: value });
   };
 
@@ -204,7 +204,7 @@ const PageUpdateStock = () => {
                   </td>
                 </tr>
               ) : (
-                productos.map((producto) => (
+                productos.map((producto: any) => (
                   <tr
                     key={producto.id}
                     className="border-b border-gray-300/40 last:border-0 hover:bg-gray-500/5 transition"

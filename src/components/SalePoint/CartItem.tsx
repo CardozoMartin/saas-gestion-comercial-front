@@ -3,7 +3,7 @@ import { Minus, Plus, X } from "lucide-react";
 interface CartItemData {
   id: number;
   nombre: string;
-  precioVenta: string;
+  precioVenta: number;
   unidadMedidaNombre: string;
   cantidad: number;
   stockActual: number;
@@ -11,7 +11,7 @@ interface CartItemData {
 
 interface CartItemProps {
   item: CartItemData;
-  formatQuantity: (item: CartItemData, cantidad: number) => string;
+  formatQuantity: (item: any, cantidad: number) => string;
   onRemove: (id: number) => void;
   onDecrement: (id: number) => void;
   onIncrement: (id: number, stock: number) => void;
@@ -63,7 +63,7 @@ const CartItem = ({
           </button>
         </div>
         <span className="font-bold text-gray-800">
-          ${(parseFloat(item.precioVenta) * item.cantidad).toFixed(2)}
+          ${(Number(item.precioVenta) * item.cantidad).toFixed(2)}
         </span>
       </div>
     </div>
