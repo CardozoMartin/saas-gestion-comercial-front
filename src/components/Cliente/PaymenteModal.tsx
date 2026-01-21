@@ -1,9 +1,19 @@
-import React from 'react'
+
 import { useForm } from 'react-hook-form'
 import { usePayment } from '../../hooks/usePayment'
 import Swal from 'sweetalert2'
 
-const PaymenteModal = ({ isOpen, onClose, clienteId, saldoActual, isPendingPay, isErrorPay }) => {
+interface PaymenteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  clienteId: number;
+  saldoActual: number;
+  isPendingPay: boolean;
+  isErrorPay: boolean;
+  onSubmit?: (data: any) => void;
+}
+
+const PaymenteModal = ({ isOpen, onClose, clienteId, saldoActual, isPendingPay, isErrorPay }: PaymenteModalProps) => {
 
     const { postPayment } = usePayment()
   
@@ -15,7 +25,7 @@ const PaymenteModal = ({ isOpen, onClose, clienteId, saldoActual, isPendingPay, 
         // Aquí deberías llamar a tu función de pago
         Swal.fire({
             title: '¿Confirmar pago?',
-            text: `Estás a punto de registrar un pago de ${data.amount} para el cliente.`,
+            text: `Estás a punto de registrar un pago de ${data.monto} para el cliente.`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -106,7 +116,7 @@ const PaymenteModal = ({ isOpen, onClose, clienteId, saldoActual, isPendingPay, 
                                 }
                             })} 
                         />
-                        {errors.amount && <p className="text-red-600 text-sm mt-1">{errors.amount.message}</p>}
+                        {errors.monto && <p className="text-red-600 text-sm mt-1">{errors.monto.message as string}</p>}
                     </div>
 
                     <div className='mb-4'>
@@ -123,7 +133,7 @@ const PaymenteModal = ({ isOpen, onClose, clienteId, saldoActual, isPendingPay, 
                             <option value="3">Tarjeta</option>
                             <option value="2">Transferencia</option>
                         </select>
-                        {errors.medioPagoId && <p className="text-red-600 text-sm mt-1">{errors.medioPagoId.message}</p>}
+                        {errors.medioPagoId && <p className="text-red-600 text-sm mt-1">{errors.medioPagoId.message as string}</p>}
                     </div>
 
                     {/* Buttons */}

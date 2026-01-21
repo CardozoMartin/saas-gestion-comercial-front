@@ -11,7 +11,7 @@ interface LoginFormData {
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { postLogin, isPending, isError, isSuccess, error, data } = useAuth();
+  const { postLogin, isPending, isSuccess } = useAuth();
   const navigate = useNavigate();
 
   // Navegar al dashboard cuando el login sea exitoso

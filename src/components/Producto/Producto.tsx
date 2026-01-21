@@ -1,4 +1,4 @@
-import React from "react";
+
 import StyledTable from "../../utils/Tables/Table";
 import { Link } from "react-router-dom";
 import { useProduct } from "../../hooks/useProduct";
@@ -6,7 +6,7 @@ import { useProduct } from "../../hooks/useProduct";
 
 const Producto = () => {
 
-  const { AllProducts } = useProduct();
+  useProduct();
 
   return (
     <div className="bg-white border border-gray-500/30 rounded-md p-6">

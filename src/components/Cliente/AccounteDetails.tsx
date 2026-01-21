@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, Fragment } from "react";
 import { useLocation } from "react-router-dom";
 import { useCliente } from "../../hooks/useCliente";
 import { usePayment } from "../../hooks/usePayment";
@@ -7,7 +7,7 @@ import { FileText } from "lucide-react";
 const AccountDetails = () => {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [expandedVenta, setExpandedVenta] = useState(null);
+  const [expandedVenta, setExpandedVenta] = useState<number | null>(null);
 
   const { clienteId } = location.state || {};
   const { useGetCuentaCorrienteCliente } = useCliente();
@@ -38,12 +38,11 @@ const AccountDetails = () => {
   const {
     cliente,
     saldoActual,
-    condicionPago,
     fechaProximoVencimiento,
     ventas,
   } = cuentaCorriente;
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-AR", {
       year: "numeric",
       month: "2-digit",
@@ -53,14 +52,14 @@ const AccountDetails = () => {
     });
   };
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: number | string) => {
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
       currency: "ARS",
     }).format(Number(amount));
   };
 
-  const handlePaymentSubmit = (data) => {
+  const handlePaymentSubmit = (data: any) => {
     const paymentData = {
       clienteId: cliente.id,
       ...data,
@@ -73,7 +72,7 @@ const AccountDetails = () => {
     });
   };
 
-  const toggleVentaDetails = (ventaId) => {
+  const toggleVentaDetails = (ventaId: number) => {
     setExpandedVenta(expandedVenta === ventaId ? null : ventaId);
   };
 
@@ -156,8 +155,8 @@ const AccountDetails = () => {
             </thead>
             <tbody>
               {ventas && ventas.length > 0 ? (
-                ventas.map((venta, index) => (
-                  <React.Fragment key={venta.ventaId}>
+                ventas.map((venta: any, index: number) => (
+                  <Fragment key={venta.ventaId}>
                     {/* Fila principal de la venta */}
                     <tr className="border-b border-gray-300/50 hover:bg-gray-500/20 transition">
                       <td className="px-3 py-3 text-gray-800/80 font-medium">
@@ -227,7 +226,7 @@ const AccountDetails = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {venta.detalles.map((detalle) => (
+                                  {venta.detalles.map((detalle: any) => (
                                     <tr
                                       key={detalle.id}
                                       className="border-b border-gray-300/30 last:border-0"
@@ -258,7 +257,7 @@ const AccountDetails = () => {
                         </td>
                       </tr>
                     )}
-                  </React.Fragment>
+                  </Fragment>
                 ))
               ) : (
                 <tr>

@@ -14,11 +14,22 @@ import { useSale } from "../hooks/useSale";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
+interface Product {
+  id: number;
+  nombre: string;
+  codigo: string;
+  categoriaNombre?: string;
+  precioVenta: string | number;
+  unidadMedidaNombre: string;
+  unidadMedidaId?: number;
+  stockActual?: number;
+}
+
 const PointSale = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [inputType, setInputType] = useState("cantidad");
-  const [inputValue, setInputValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [inputType, setInputType] = useState<'cantidad' | 'monto'>("cantidad");
+  const [inputValue, setInputValue] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
   const [showCuentaCorrienteModal, setShowCuentaCorrienteModal] = useState(false);
 
@@ -47,9 +58,7 @@ const PointSale = () => {
       console.log("🔍 Código escaneado:", barcode);
       
       // Buscar el producto por código
-      const producto = allProductsData?.find(
-        (p) => p.codigo.toLowerCase() === barcode.toLowerCase()
-      );
+      const producto = allProductsData?.find((p: any) => p.codigo.toLowerCase() === barcode.toLowerCase());
 
       if (producto) {
         // Si es un producto con peso/volumen, abrir el modal para ingresar cantidad
@@ -113,9 +122,11 @@ const PointSale = () => {
       }
     },
     "ctrl+b": () => {
-      const searchInput = document.getElementById("search-product");
-      searchInput?.focus();
-      searchInput?.select();
+      const searchInput = document.getElementById("search-product") as HTMLInputElement | null;
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+      }
     },
     f1: () => agregarProductoRapido("Coca Cola 2.25L"),
     f7: () => agregarProductoRapido("Cigarrillos"),
@@ -124,7 +135,7 @@ const PointSale = () => {
     1: () => agregarProductoRapido("Coca Cola 2.25L"),
     ' ': () => {
       if (!autoSpaceEnabled) {
-        toast.toast && toast.toast("Auto-space desactivado");
+        toast('Auto-space desactivado');
         return;
       }
       if (cartItems.length > 0) {
@@ -170,7 +181,7 @@ const PointSale = () => {
         productoId: item.id,
         unidadMedidaId: item.unidadMedidaId,
         cantidad: item.cantidad,
-        precioUnitario: parseFloat(item.precioVenta),
+        precioUnitario: Number(item.precioVenta),
       })),
     };
 
@@ -190,20 +201,20 @@ const PointSale = () => {
     }
   };
 
-  const showNotification = (message, type = "success") => {
+  const showNotification = (message: string, type: 'success' | 'error' | 'info' = "success") => {
     console.log(`[${type.toUpperCase()}] ${message}`);
   };
 
-  const agregarProductoRapido = (nombreProducto) => {
-    const producto = allProductsData?.find((p) =>
+  const agregarProductoRapido = (nombreProducto: string) => {
+    const producto = allProductsData?.find((p: any) =>
       p.nombre.toLowerCase().includes(nombreProducto.toLowerCase())
     );
 
     if (producto) {
       if (isWeightVolumeSale(producto.unidadMedidaNombre)) {
-        setSelectedProduct(producto);
+        setSelectedProduct(producto as Product);
       } else {
-        addToCart(producto);
+        addToCart(producto as Product);
         showNotification(`✅ ${producto.nombre} agregado`);
       }
     } else {
@@ -211,12 +222,12 @@ const PointSale = () => {
     }
   };
 
-  const isWeightVolumeSale = (unidadMedida) => {
+  const isWeightVolumeSale = (unidadMedida: string) => {
     return ["Kilogramo", "Litro", "Metro"].includes(unidadMedida);
   };
 
-  const getSubUnit = (unidadMedida) => {
-    const map = {
+  const getSubUnit = (unidadMedida: string) => {
+    const map: Record<string, string> = {
       Kilogramo: "gramos",
       Litro: "ml",
       Metro: "cm",
@@ -224,39 +235,38 @@ const PointSale = () => {
     return map[unidadMedida] || unidadMedida;
   };
 
-  const calculateQuantity = (producto, type, value) => {
+  const calculateQuantity = (producto: Product, type: 'cantidad' | 'monto' | string, value: string) => {
     const numValue = parseFloat(value) || 0;
     if (type === "cantidad") {
       return numValue;
     } else {
-      return numValue / parseFloat(producto.precioVenta);
+      return numValue / Number(producto.precioVenta);
     }
   };
 
   const filteredProducts = searchTerm.trim()
-    ? allProductsData?.filter(
-        (p) =>
-          p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+    ? allProductsData?.filter((p: any) =>
+        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.codigo.toLowerCase().includes(searchTerm.toLowerCase())
       ) || []
     : [];
 
-  const addToCart = (producto, cantidadCustom = null) => {
+  const addToCart = (producto: Product, cantidadCustom: number | null = null) => {
     const cantidad = cantidadCustom !== null ? cantidadCustom : 1;
     addToCartStore({
       id: producto.id,
       nombre: producto.nombre,
-      precioVenta: producto.precioVenta,
+      precioVenta: Number(producto.precioVenta),
       cantidad: cantidad,
       unidadMedidaNombre: producto.unidadMedidaNombre,
-      unidadMedidaId: producto.unidadMedidaId,
-      stockActual: producto.stockActual,
+      unidadMedidaId: producto.unidadMedidaId ?? 0,
+      stockActual: producto.stockActual ?? 0,
       codigo: producto.codigo,
       categoriaNombre: producto.categoriaNombre,
     });
   };
 
-  const handleProductClick = (producto) => {
+  const handleProductClick = (producto: Product) => {
     if (isWeightVolumeSale(producto.unidadMedidaNombre)) {
       setSelectedProduct(producto);
       setInputType("cantidad");
@@ -269,26 +279,26 @@ const PointSale = () => {
   const handleWeightConfirm = () => {
     if (!selectedProduct || !inputValue) return;
 
-    const cantidad = calculateQuantity(selectedProduct, inputType, inputValue);
+    const cantidad = calculateQuantity(selectedProduct as Product, inputType, inputValue);
 
     if (cantidad <= 0) {
       alert("La cantidad debe ser mayor a 0");
       return;
     }
 
-    if (cantidad > selectedProduct.stockActual) {
+    if (cantidad > (selectedProduct.stockActual || 0)) {
       alert(
         `Stock insuficiente. Disponible: ${selectedProduct.stockActual} ${selectedProduct.unidadMedidaNombre}`
       );
       return;
     }
 
-    addToCart(selectedProduct, cantidad);
+    addToCart(selectedProduct as Product, cantidad);
     setSelectedProduct(null);
     setInputValue("");
   };
 
-  const incrementQuantity = (id, stock) => {
+  const incrementQuantity = (id: number, stock: number) => {
     const item = cartItems.find((i) => i.id === id);
     if (!item) return;
 
@@ -298,7 +308,7 @@ const PointSale = () => {
     updateQuantity(id, newQuantity);
   };
 
-  const decrementQuantity = (id) => {
+  const decrementQuantity = (id: number) => {
     const item = cartItems.find((i) => i.id === id);
     if (!item) return;
 
@@ -310,7 +320,7 @@ const PointSale = () => {
     updateQuantity(id, newQuantity);
   };
 
-  const removeFromCart = (id) => {
+  const removeFromCart = (id: number) => {
     removeFromCartStore(id);
   };
 
@@ -318,7 +328,7 @@ const PointSale = () => {
     clearCartStore();
   };
 
-  const formatQuantity = (producto, cantidad) => {
+  const formatQuantity = (producto: any, cantidad: number) => {
     if (isWeightVolumeSale(producto.unidadMedidaNombre)) {
       const subUnit = getSubUnit(producto.unidadMedidaNombre);
       if (cantidad < 1) {
@@ -335,7 +345,7 @@ const PointSale = () => {
     if (!selectedProduct || !inputValue) return null;
 
     const cantidad = calculateQuantity(selectedProduct, inputType, inputValue);
-    const monto = cantidad * parseFloat(selectedProduct.precioVenta);
+    const monto = cantidad * Number(selectedProduct.precioVenta);
 
     return {
       cantidad,
@@ -345,7 +355,7 @@ const PointSale = () => {
   };
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + parseFloat(item.precioVenta) * item.cantidad,
+    (sum, item) => sum + Number(item.precioVenta) * item.cantidad,
     0
   );
 
@@ -430,7 +440,7 @@ const PointSale = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {filteredProducts.map((producto) => {
+                  {filteredProducts.map((producto: any) => {
                     const isSelected = selectedProduct?.id === producto.id;
                     const productPreview = isSelected ? getPreview() : null;
 
@@ -486,7 +496,6 @@ const PointSale = () => {
           open={showCuentaCorrienteModal}
           onClose={() => setShowCuentaCorrienteModal(false)}
           cart={cartItems}
-          setCart={() => {}}
         />
       )}
     </div>

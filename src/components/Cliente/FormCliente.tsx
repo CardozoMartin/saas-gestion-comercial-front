@@ -14,12 +14,11 @@ import {
   Building2,
   CheckCircle,
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useCliente } from "../../hooks/useCliente";
 import Swal from "sweetalert2";
-
-interface Cliente {
+interface FormClienteData {
   tipoDocumento: string;
   numeroDocumento: string;
   nombre: string;
@@ -40,7 +39,7 @@ const FormCliente = () => {
   //Hook para crear un cliente
   const { usePostCliente } = useCliente();
 
-  const { mutate: postCliente, isPending, isError } = usePostCliente();
+  const { mutate: postCliente } = usePostCliente();
 
   const {
     register,
@@ -48,7 +47,7 @@ const FormCliente = () => {
     formState: { errors },
     reset,
     watch,
-  } = useForm<Cliente>({
+  } = useForm<FormClienteData>({
     defaultValues: {
       tipoDocumento: "DNI",
       numeroDocumento: "",
@@ -59,14 +58,14 @@ const FormCliente = () => {
       telefono: "",
       direccion: "",
       limiteCredito: 0,
-      condicionPagoId: undefined as any,
+      condicionPagoId: 1,
       fechaProximaVencimiento: "",
     },
   });
 
   const tipoDocumento = watch("tipoDocumento");
 
-  const onSubmit = (data: Cliente) => {
+  const onSubmit = (data: FormClienteData) => {
     setIsLoading(true);
     
     // Simular envío de datos
@@ -77,7 +76,7 @@ const FormCliente = () => {
       },
       allowOutsideClick: false,
     });
-    postCliente(data);
+    postCliente(data as any);
     // Simular respuesta del servidor
     setTimeout(() => {
       setShowSuccessMessage(true);

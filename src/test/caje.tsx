@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBox } from "../hooks/useBox";
 import Swal from "sweetalert2";
@@ -20,7 +20,7 @@ export default function CajaPage() {
   const { 
     data: responseData, 
     isLoading: isLoadingCaja, 
-  } = useBoxByUser(user?.userId || 0);
+  } = useBoxByUser(Number(user?.userId ?? 0));
 
   const cajaAbierta = responseData?.data?.[0] || null;
 
@@ -29,7 +29,7 @@ export default function CajaPage() {
   data: boxDetails, 
   isLoading: isLoadingDetails 
 } = useBoxDetailByUser(
-  user?.userId || 0,
+  Number(user?.userId ?? 0),
   {
     enabled: !!cajaAbierta // Solo ejecutar si cajaAbierta existe
   }
@@ -66,11 +66,11 @@ export default function CajaPage() {
   });
 
   // Calcular diferencia en tiempo real
-  const montoFinalContado = parseFloat(watchCerrar("montoFinalContado") || "0");
+  const montoFinalContado = Number(watchCerrar("montoFinalContado") || 0);
   const montoEsperado = resumen ? resumen.montoEsperado : 0;
   const diferencia = montoFinalContado - montoEsperado;
 
-  const onSubmitAbrir = (data) => {
+  const onSubmitAbrir = (data: any) => {
     Swal.fire({
       title: "¿Abrir Caja?",
       text: "¿Estás seguro de que deseas abrir la caja?",
@@ -83,10 +83,10 @@ export default function CajaPage() {
     }).then((result) => {
       if (result.isConfirmed) {
         postOpenBox(
-          {
+          ({
             montoInicial: parseFloat(data.montoInicial),
-            usuarioId: user?.userId,
-          },
+            usuarioId: Number(user?.userId ?? 0),
+          } as any),
           {
             onSuccess: () => {
               Swal.fire({
@@ -109,7 +109,7 @@ export default function CajaPage() {
     });
   };
 
-  const onSubmitCerrar = (data) => {
+  const onSubmitCerrar = (data: any) => {
     Swal.fire({
       title: "¿Cerrar Caja?",
       html: `
@@ -531,7 +531,7 @@ export default function CajaPage() {
                   </td>
                 </tr>
               ) : (
-                ventas.map((venta) => (
+                ventas.map((venta: any) => (
                   <tr
                     key={venta.id}
                     className="border-b border-gray-300/50 last:border-0 hover:bg-gray-500/20 transition"
@@ -566,7 +566,7 @@ export default function CajaPage() {
                     </td>
                     <td className="px-3 py-3 text-gray-800/80">
                       <div className="flex flex-col gap-1">
-                        {venta.detalles.map((detalle) => (
+                        {venta.detalles.map((detalle: any) => (
                           <div key={detalle.id} className="text-xs">
                             <span className="font-medium">{detalle.producto.nombre}</span>
                             {' '}

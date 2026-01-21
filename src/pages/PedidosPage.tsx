@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBox } from "../hooks/useBox";
 import Swal from "sweetalert2";
 import { useSession } from "../store/useSession";
 import RowClienteData from "../components/Box/RowClienteData";
-import { Form } from "react-router-dom";
+
 import FormBoxOpen from "../components/Box/FormBoxOpen";
 import FormBoxClose from "../components/Box/FormBoxClose";
 
@@ -23,23 +23,19 @@ export default function CajaPage() {
   const [mostrarFormularioCierre, setMostrarFormularioCierre] = useState(false);
 
   //Verificamos que el usuario tenga caja abierta
-  const {
-    data: verifyBoxData,
-    isLoading: isLoadingVerifyBox,
-    isError: isErrorVerifyBox,
-  } = useVerifyOpenBoxByUser(user?.userId || 0);
+  const { isError: isErrorVerifyBox } = useVerifyOpenBoxByUser(Number(user?.userId ?? 0));
 
 
   // ✅ PASO 1: Primero obtener solo el estado de la caja
   const { data: responseData, isLoading: isLoadingCaja } = useBoxByUser(
-    user?.userId || 0,
+    Number(user?.userId ?? 0),
   );
 
   const cajaAbierta = responseData?.data?.[0] || null;
 
   // ✅ PASO 2: Solo obtener detalles si hay caja abierta
  const { data: boxDetails, isLoading: isLoadingDetails } = useBoxDetailByUser(
-  user?.userId || 0,
+  Number(user?.userId ?? 0),
   {
     enabled: !!cajaAbierta,
   },
@@ -79,11 +75,11 @@ export default function CajaPage() {
   });
 
   // Calcular diferencia en tiempo real
-  const montoFinalContado = parseFloat(watchCerrar("montoFinalContado") || "0");
+  const montoFinalContado = Number(watchCerrar("montoFinalContado") || 0);
   const montoEsperado = resumen ? resumen.montoEsperado : 0;
   const diferencia = montoFinalContado - montoEsperado;
 
-  const onSubmitAbrir = (data) => {
+  const onSubmitAbrir = (data: any) => {
     console.log("data antes de enviar:", data);
     Swal.fire({
       title: "¿Abrir Caja?",
@@ -98,7 +94,7 @@ export default function CajaPage() {
       if (result.isConfirmed) {
         postOpenBox(
           {
-            usuarioId: user?.userId,
+            usuarioId: Number(user?.userId ?? 0),
             observaciones: data.observaciones,
           },
           {
@@ -124,7 +120,7 @@ export default function CajaPage() {
     });
   };
 
-  const onSubmitCerrar = (data) => {
+  const onSubmitCerrar = (data: any) => {
     Swal.fire({
       title: "¿Cerrar Caja?",
       html: `
@@ -145,10 +141,10 @@ export default function CajaPage() {
     }).then((result) => {
       if (result.isConfirmed) {
         const payload = {
-          usuarioId: user?.userId || 0,
-          montoFinalContado: parseFloat(data.montoFinalContado),
-          montoRetirado: parseFloat(data.montoRetirado),
-          fondoSiguienteCaja: parseFloat(data.fondoSiguienteCaja),
+          usuarioId: Number(user?.userId ?? 0),
+          montoFinalContado: Number(data.montoFinalContado),
+          montoRetirado: Number(data.montoRetirado),
+          fondoSiguienteCaja: Number(data.fondoSiguienteCaja),
         };
 
         closeBox(
@@ -490,7 +486,7 @@ export default function CajaPage() {
                   </td>
                 </tr>
               ) : (
-                ventas.map((venta) => (
+                ventas.map((venta: any) => (
                   <RowClienteData key={venta.id} venta={venta} />
                 ))
               )}

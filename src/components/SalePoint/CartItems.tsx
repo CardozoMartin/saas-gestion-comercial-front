@@ -5,7 +5,7 @@ import CartItem from './CartItem';
 interface CartItemData {
   id: number;
   nombre: string;
-  precioVenta: string;
+  precioVenta: number;
   unidadMedidaNombre: string;
   cantidad: number;
   stockActual: number;
@@ -17,7 +17,7 @@ interface CartItemsProps {
   removeFromCart: (id: number) => void;
   decrementQuantity: (id: number) => void;
   incrementQuantity: (id: number, stock: number) => void;
-  formatQuantity: (item: CartItemData, cantidad: number) => string;
+  formatQuantity: (item: any, cantidad: number) => string;
   subtotal: number;
   total: number;
   handleDrawCuentaCorriente: () => void;

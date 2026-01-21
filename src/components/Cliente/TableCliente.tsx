@@ -1,9 +1,12 @@
-import React from "react";
+
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useCliente } from "../../hooks/useCliente";
+import type { Cliente } from "../../types/cliente.types";
 
-const TableCliente = ({ clientes }) => {
+type ClienteTableItem = Cliente & { activo?: boolean };
+
+const TableCliente = ({ clientes }: { clientes?: ClienteTableItem[] }) => {
     const navigate = useNavigate()
     const handleDetailAccount = (clienteId: number) => {
         console.log(clienteId,"clienteId")

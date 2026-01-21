@@ -1,5 +1,4 @@
 import axios from "axios";
-import { use } from "react";
 import { useSession } from "../store/useSession";
 
 
@@ -18,10 +17,8 @@ api.interceptors.request.use(
   (config) => {
     const { token } = useSession.getState();
     if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      };
+      // asignar de forma segura para evitar problemas de tipos con AxiosHeaders
+      (config.headers as any).Authorization = `Bearer ${token}`;
     }
     return config;
   },

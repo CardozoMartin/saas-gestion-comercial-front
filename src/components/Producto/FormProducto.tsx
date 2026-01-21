@@ -12,7 +12,7 @@ import {
   Hash,
   CheckCircle,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useCategory } from "../../hooks/useCategory";
 import { useProduct } from "../../hooks/useProduct";
@@ -125,9 +125,7 @@ const FormProducto = () => {
         confirmButtonText: "Sí, actualizarlo!",
       }).then((result) => {
         if (result.isConfirmed) {
-          putProduct(
-            { id: productEdite.id, ...productData },
-            {
+          putProduct({ id: productEdite.id, ...productData } as any, {
               onSuccess: () => {
                 setShowSuccessMessage(true);
                 reset();
@@ -158,7 +156,7 @@ const FormProducto = () => {
 
       
 
-      postProduct(productData, {
+      postProduct(productData as any, {
         onSuccess: () => {
           setShowSuccessMessage(true);
           reset();

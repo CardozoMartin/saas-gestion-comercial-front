@@ -9,7 +9,6 @@ export const useRecaudado = () => {
         queryKey: ['recaudadoPorMes'],
         queryFn: () => getRecaudadoPorMesFn(),
         staleTime: 5 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
     })
 
@@ -18,7 +17,6 @@ export const useRecaudado = () => {
         queryKey: ['recaudadoPorSemana'],
         queryFn: () => getRecaudadoPorSemanaFn(),
         staleTime: 5 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
     })
 

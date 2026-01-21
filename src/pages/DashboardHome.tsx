@@ -38,11 +38,7 @@ const DashboardHome = () => {
 
   //hook para obtener los clientes con deudas
   const { useGetClientesConDeudas } = useCliente();
-  const {
-    data: clientesConDeudasData,
-    isLoading: isLoadingClientesConDeudas,
-    isError: isErrorClientesConDeudas,
-  } = useGetClientesConDeudas();
+  const { data: clientesConDeudasData } = useGetClientesConDeudas();
   const clientesConDeudas = clientesConDeudasData?.data || [];
   console.log("Clientes con deudas:", clientesConDeudas);
 
@@ -50,7 +46,7 @@ const DashboardHome = () => {
   const recaudadoPorSemana = recaudadoPorSemanaData?.data || [];
 
   // Preparar datos para el gráfico de MESES
-  const salesChartDataMonth = recaudadoPorMes.map((item) => ({
+  const salesChartDataMonth = recaudadoPorMes.map((item: any) => ({
     mes: item.nombre_mes?.substring(0, 3) || "",
     total: Number(item.total_recaudado),
     ventas: Number(item.total_ventas),
@@ -60,7 +56,7 @@ const DashboardHome = () => {
   const salesChartDataWeek = recaudadoPorSemana
     .slice()
     .reverse()
-    .map((item) => ({
+    .map((item: any) => ({
       semana: `S${item.numero_semana}`,
       total: Number(item.total_recaudado),
       ventas: Number(item.total_ventas),
@@ -116,8 +112,8 @@ const DashboardHome = () => {
                     tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
-                    formatter={(value: number) => [
-                      `$${value.toLocaleString()}`,
+                    formatter={(value: number | undefined) => [
+                      `$${(value ?? 0).toLocaleString()}`,
                       "Total",
                     ]}
                     contentStyle={{
@@ -188,7 +184,7 @@ const DashboardHome = () => {
             {!isLoadingLowStockProducts &&
               !isErrorLowStockProducts &&
               lowStockProducts.length > 0 &&
-              lowStockProducts.map((product, index) => (
+              lowStockProducts.map((product: any, index: number) => (
                 <div
                   key={product.id || index}
                   className="border-b border-gray-200 pb-3 last:border-0"
@@ -288,8 +284,8 @@ const DashboardHome = () => {
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
-                  formatter={(value: number) => [
-                    `$${value.toLocaleString()}`,
+                  formatter={(value: number | undefined) => [
+                    `$${(value ?? 0).toLocaleString()}`,
                     "Total",
                   ]}
                   labelFormatter={(label) => `Semana ${label.substring(1)}`}
@@ -355,7 +351,7 @@ const DashboardHome = () => {
             </thead>
             <tbody>
               {
-                clientesConDeudas.map((cliente, index) => (
+                clientesConDeudas.map((cliente: any, index: number) => (
               <tr key={cliente.id} className="border-b border-gray-300/50 last:border-0 hover:bg-gray-500/20 transition">
                 <td className="px-3 py-3 text-gray-800/80 font-medium">{index}</td>
                 <td className="px-3 py-3 text-gray-800/80 font-medium">{cliente.nombre}{" "}{cliente.apellido}</td>

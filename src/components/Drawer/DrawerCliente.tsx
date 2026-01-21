@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useCliente } from "../../hooks/useCliente";
 import { useSale } from "../../hooks/useSale";
 import { toast } from "sonner";
 import { useCart } from "../../store/useCart";
-import { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../../store/useSession";
+import type { Cliente } from "../../types/cliente.types";
 
 interface FinishSale {
   clienteId?: number;
@@ -22,30 +23,37 @@ interface FinishSale {
   }>;
 }
 
-const DrawerCliente = ({ open, onClose, onSelectCliente, cart, setCart }) => {
+interface DrawerClienteProps {
+  open: boolean;
+  onClose: () => void;
+  onSelectCliente?: (cliente: any) => void;
+  cart: Array<{ id: number; unidadMedidaId?: number; cantidad: number; precioVenta: string | number; nombre?: string }>;
+}
+
+const DrawerCliente = ({ open, onClose, onSelectCliente, cart }: DrawerClienteProps) => {
   const { useGetClientes } = useCliente();
   const { data: clientes, isLoading, isError } = useGetClientes();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { postSale } = useSale();
   const { clearCart } = useCart();
-  const queryCliente = new QueryClient();
+  const queryClient = useQueryClient();
   const { user }= useSession()
 
-  const filteredClientes = clientes?.filter((cliente) =>
+  const filteredClientes: Cliente[] = (clientes || []).filter((cliente: Cliente) =>
     `${cliente.nombre} ${cliente.apellido}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase()),
   );
 
-  const handleSelectCliente = async (cliente) => {
+  const handleSelectCliente = async (cliente: any) => {
     setSelectedCliente(cliente);
     setIsProcessing(true);
 
     const saleData: FinishSale = {
       clienteId: cliente.id,
-      usuarioId: user?.userId ? parseInt(user.userId) : undefined,
+      usuarioId: user?.userId ? Number(user.userId) : undefined,
       tipoVenta: "cuenta_corriente",
       descuento: 0,
       observaciones: "Venta desde sale point cuenta corriente",
@@ -53,9 +61,9 @@ const DrawerCliente = ({ open, onClose, onSelectCliente, cart, setCart }) => {
       total: 0,
       detalles: cart.map((item) => ({
         productoId: item.id,
-        unidadMedidaId: item.unidadMedidaId,
+        unidadMedidaId: item.unidadMedidaId as number,
         cantidad: item.cantidad,
-        precioUnitario: parseFloat(item.precioVenta),
+        precioUnitario: Number(item.precioVenta),
       })),
     };
 
@@ -68,7 +76,8 @@ const DrawerCliente = ({ open, onClose, onSelectCliente, cart, setCart }) => {
       });
 
       clearCart();
-      queryCliente.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      onSelectCliente?.(cliente);
       
       setTimeout(() => {
         setSelectedCliente(null);
@@ -76,11 +85,11 @@ const DrawerCliente = ({ open, onClose, onSelectCliente, cart, setCart }) => {
         setIsProcessing(false);
         onClose();
       }, 300);
-    } catch (error) {
+    } catch (err: any) {
       setIsProcessing(false);
       setSelectedCliente(null);
       
-      const errorDeCaja = error.response?.data?.error;
+      const errorDeCaja = err?.response?.data?.error;
 
       if (
         errorDeCaja ===

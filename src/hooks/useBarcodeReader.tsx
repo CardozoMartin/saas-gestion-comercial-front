@@ -20,7 +20,7 @@ export const useBarcodeReader = ({
   preventDefaultOnEnter = true,
 }: UseBarcodeReaderProps) => {
   const bufferRef = useRef<string>('');
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!enabled) return;

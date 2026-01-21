@@ -6,9 +6,9 @@ export const useSale = () => {
 
     const { mutateAsync: postSale, isPending: isPostingSale, isError: isPostSaleError, error: postSaleError } = useMutation({
         mutationFn: postSaleFn,
-        onSuccess: (data: any) => {},
+        onSuccess: () => {},
         onError: (error: any) => {
-            console.log(error.response.data.error);
+            console.log(error.response?.data?.error);
         }
     })
 

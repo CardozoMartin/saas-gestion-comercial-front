@@ -1,8 +1,10 @@
-import React from 'react'
 
-const TableCategory = ({ AllCategories }: any) => {
 
-  const Categorias = AllCategories || [];
+import type { Category } from '../../types/category.types';
+
+const TableCategory = ({ AllCategories }: { AllCategories?: Category[] }) => {
+
+  const Categorias: Category[] = AllCategories || [];
   return (
      <table className="w-full text-sm">
               <thead>
