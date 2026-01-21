@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Search, ShoppingCart } from "lucide-react";
 import { useProduct } from "../hooks/useProduct";
 import { useCart } from "../store/useCart";
 import ModalSale from "../components/SalePoint/ModalSale";
 import DrawerCliente from "../components/Drawer/DrawerCliente";
 import { useShortcuts } from "../hooks/useShortcuts";
+import { useBarcodeReader } from "../hooks/useBarcodeReader"; // 👈 IMPORTAR EL HOOK
 import CartItems from "../components/SalePoint/CartItems";
 import SearchBar from "../components/SalePoint/SearchBar";
 import ProductCard from "../components/SalePoint/ProductCard";
@@ -21,14 +22,12 @@ const PointSale = () => {
   const [showModal, setShowModal] = useState(false);
   const [showCuentaCorrienteModal, setShowCuentaCorrienteModal] = useState(false);
 
-  // Toggle para permitir/desactivar la venta automática con Space (persistente)
   const [autoSpaceEnabled, setAutoSpaceEnabled] = useState<boolean>(() => {
     const saved = localStorage.getItem('pos.autoSpace');
     return saved === null ? true : saved === 'true';
   });
 
   const { allProductsData } = useProduct();
-  console.log("allProductsData:", allProductsData);
   const {
     cart,
     addToCart: addToCartStore,
@@ -36,14 +35,46 @@ const PointSale = () => {
     clearCart: clearCartStore,
     updateQuantity,
   } = useCart();
-   const { user } = useSession();
+  const { user } = useSession();
   const { postSale, isPostingSale } = useSale();
   const queryClient = useQueryClient();
 
   const cartItems = cart;
 
-  // Ref al input del producto por peso/volumen para enfocar desde atajos
-  const weightInputRef = useRef<HTMLInputElement | null>(null);
+  // 🔥 HOOK DEL ESCÁNER DE CÓDIGOS DE BARRAS
+  useBarcodeReader({
+    onScan: (barcode) => {
+      console.log("🔍 Código escaneado:", barcode);
+      
+      // Buscar el producto por código
+      const producto = allProductsData?.find(
+        (p) => p.codigo.toLowerCase() === barcode.toLowerCase()
+      );
+
+      if (producto) {
+        // Si es un producto con peso/volumen, abrir el modal para ingresar cantidad
+        if (isWeightVolumeSale(producto.unidadMedidaNombre)) {
+          setSelectedProduct(producto);
+          setInputType("cantidad");
+          setInputValue("");
+          toast.success(`📦 ${producto.nombre}`, {
+            description: "Ingresa la cantidad a vender"
+          });
+        } else {
+          // Agregar directamente al carrito
+          addToCart(producto);
+          toast.success(`✅ ${producto.nombre} agregado`);
+        }
+      } else {
+        toast.error(`❌ Producto no encontrado`, {
+          description: `Código: ${barcode}`
+        });
+      }
+    },
+    minLength: 3, // Ajusta según el largo de tus códigos
+    timeout: 100, // Ajusta según la velocidad de tu escáner
+    enabled: !showModal && !showCuentaCorrienteModal, // Solo activo cuando no hay modales
+  });
 
   // ATAJOS DE TECLADO
   useShortcuts({
@@ -90,23 +121,7 @@ const PointSale = () => {
     f7: () => agregarProductoRapido("Cigarrillos"),
     f8: () => agregarProductoRapido("Pan"),
     f9: () => agregarProductoRapido("Leche"),
-    // Atajos para productos por peso/volumen: 'c' = cantidad, 'm' = monto (foco en input)
-    c: () => {
-      if (selectedProduct && isWeightVolumeSale(selectedProduct.unidadMedidaNombre)) {
-        setInputType("cantidad");
-        setInputValue("");
-        // esperar al re-render y enfocar
-        setTimeout(() => weightInputRef.current?.focus(), 50);
-      }
-    },
-    m: () => {
-      if (selectedProduct && isWeightVolumeSale(selectedProduct.unidadMedidaNombre)) {
-        setInputType("monto");
-        setInputValue("");
-        setTimeout(() => weightInputRef.current?.focus(), 50);
-      }
-    },
-    // Tecla Space: procesar venta automáticamente en efectivo (sólo si está activado)
+    1: () => agregarProductoRapido("Coca Cola 2.25L"),
     ' ': () => {
       if (!autoSpaceEnabled) {
         toast.toast && toast.toast("Auto-space desactivado");
@@ -136,7 +151,6 @@ const PointSale = () => {
     },
   });
 
-  // Procesar venta automática con Space (solo efectivo)
   const processSaleAuto = async () => {
     if (cartItems.length === 0) return;
     if (isPostingSale) {
@@ -229,7 +243,6 @@ const PointSale = () => {
 
   const addToCart = (producto, cantidadCustom = null) => {
     const cantidad = cantidadCustom !== null ? cantidadCustom : 1;
-    console.log("producto a agregar:", producto, "cantidad:", cantidad);
     addToCartStore({
       id: producto.id,
       nombre: producto.nombre,
@@ -394,7 +407,7 @@ const PointSale = () => {
               <p className="text-xs text-gray-600 mt-1">
                 {searchTerm
                   ? `${filteredProducts.length} resultados para "${searchTerm}"`
-                  : "Escribe para buscar productos"}
+                  : "Escribe para buscar productos o escanea un código de barras"}
               </p>
             </div>
 
@@ -404,7 +417,7 @@ const PointSale = () => {
                   <Search size={48} className="mx-auto text-gray-300 mb-3" />
                   <p className="text-gray-500">Busca productos por nombre o código</p>
                   <p className="text-gray-400 text-sm mt-1">
-                    Escribe en el campo de búsqueda para comenzar
+                    Escribe en el campo de búsqueda o escanea un código de barras
                   </p>
                 </div>
               ) : filteredProducts.length === 0 ? (
@@ -435,7 +448,6 @@ const PointSale = () => {
                         onInputValueChange={setInputValue}
                         onCancel={() => setSelectedProduct(null)}
                         onConfirm={handleWeightConfirm}
-                        inputRef={weightInputRef}
                       />
                     );
                   })}

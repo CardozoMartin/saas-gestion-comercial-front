@@ -4,6 +4,7 @@ import { useSale } from "../../hooks/useSale";
 import { toast } from "sonner";
 import { useCart } from "../../store/useCart";
 import { QueryClient } from "@tanstack/react-query";
+import { useSession } from "../../store/useSession";
 
 interface FinishSale {
   clienteId?: number;
@@ -30,6 +31,7 @@ const DrawerCliente = ({ open, onClose, onSelectCliente, cart, setCart }) => {
   const { postSale } = useSale();
   const { clearCart } = useCart();
   const queryCliente = new QueryClient();
+  const { user }= useSession()
 
   const filteredClientes = clientes?.filter((cliente) =>
     `${cliente.nombre} ${cliente.apellido}`
@@ -43,7 +45,7 @@ const DrawerCliente = ({ open, onClose, onSelectCliente, cart, setCart }) => {
 
     const saleData: FinishSale = {
       clienteId: cliente.id,
-      usuarioId: 1,
+      usuarioId: user?.userId ? parseInt(user.userId) : undefined,
       tipoVenta: "cuenta_corriente",
       descuento: 0,
       observaciones: "Venta desde sale point cuenta corriente",

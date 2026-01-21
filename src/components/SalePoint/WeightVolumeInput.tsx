@@ -1,7 +1,5 @@
 import { Scale, DollarSign } from "lucide-react";
 
-import { RefObject } from 'react';
-
 interface WeightVolumeInputProps {
   inputType: "cantidad" | "monto";
   inputValue: string;
@@ -14,7 +12,6 @@ interface WeightVolumeInputProps {
   onInputValueChange: (value: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
-  inputRef?: RefObject<HTMLInputElement>;
 }
 
 const WeightVolumeInput = ({
@@ -56,7 +53,6 @@ const WeightVolumeInput = ({
 
       {/* Input */}
       <input
-        ref={inputRef}
         type="number"
         step="0.001"
         value={inputValue}
@@ -78,11 +74,6 @@ const WeightVolumeInput = ({
           </p>
         </div>
       )}
-
-      {/* Atajos */}
-      <div className="text-xs text-gray-500">
-        Atajos: presiona <kbd className="bg-gray-100 px-1 rounded">c</kbd> para <b>cantidad</b>, <kbd className="bg-gray-100 px-1 rounded">m</kbd> para <b>monto</b>
-      </div>
 
       {/* Botones */}
       <div className="flex gap-2">

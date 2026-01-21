@@ -35,7 +35,7 @@ export const getBoxByUserFn = async (userId: number) => {
 
 export const getBoxDatailByUserFn = async (userId: number) => {
   try {
-    const res = await api.get(`/cajas/cajas-abiertas-detalles/${userId}`);
+    const res = await api.get(`/cajas/cajasabiertasdetalles/${userId}`);
     return res.data;
   } catch (error) {
     throw error;
