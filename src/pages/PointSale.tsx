@@ -259,7 +259,7 @@ const PointSale = () => {
       precioVenta: Number(producto.precioVenta),
       cantidad: cantidad,
       unidadMedidaNombre: producto.unidadMedidaNombre,
-      unidadMedidaId: producto.unidadMedidaId ?? 0,
+      unidadMedidaId: producto.unidadMedidaId ?? 1,
       stockActual: producto.stockActual ?? 0,
       codigo: producto.codigo,
       categoriaNombre: producto.categoriaNombre,
