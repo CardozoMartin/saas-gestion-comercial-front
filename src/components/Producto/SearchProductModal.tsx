@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Search, X, Edit, Eye } from "lucide-react";
+import { Search, X } from "lucide-react";
 import Swal from "sweetalert2";
 import { useProductEdite } from "../../store/useProductEdite";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerProductoPorNombreOCodigoFn } from "../../api/products/apiProducts";
+import { useProduct } from "../../hooks/useProduct";
 
 interface SearchProductModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ const SearchProductModal = ({ isOpen, onClose }: SearchProductModalProps) => {
   const [activeSearch, setActiveSearch] = useState("");
   const { setProductEdite } = useProductEdite();
   const navigate = useNavigate();
+  const { putChangeProductStatus } = useProduct();
 
   // Query para buscar productos - obtiene datos completos
   const { data: searchResults, isLoading, isError } = useQuery({
@@ -36,22 +38,18 @@ const SearchProductModal = ({ isOpen, onClose }: SearchProductModalProps) => {
     setActiveSearch("");
   };
 
-  // ✅ SIMPLIFICADO: Ya no necesita mutation, el producto ya está completo
   const handleEditProduct = (product: any) => {
-    console.log("📝 Producto a editar:", product);
-    
     Swal.fire({
       title: `¿Desea editar ${product.nombre}?`,
       text: "Serás redirigido al formulario de edición.",
-      icon: "question",
+      icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, editar",
+      confirmButtonText: "Sí, editar!",
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
-        // ✅ El producto ya tiene todos los datos necesarios
         setProductEdite(product);
         navigate("/dashboard/agregar");
         onClose();
@@ -59,22 +57,39 @@ const SearchProductModal = ({ isOpen, onClose }: SearchProductModalProps) => {
     });
   };
 
-  const handleViewProduct = (product: any) => {
-    Swal.fire({
-      title: product.nombre,
-      html: `
-        <div style="text-align: left; padding: 10px;">
-          <p><strong>Código:</strong> ${product.codigo}</p>
-          <p><strong>Categoría:</strong> ${product.categoria?.nombre || "Sin categoría"}</p>
-          <p><strong>Stock:</strong> ${product.stockActual?.cantidad || 0} ${product.unidadMedida?.nombre || ""}</p>
-          <p><strong>Precio Venta:</strong> $${product.precioVenta}</p>
-          <p><strong>Precio Costo:</strong> $${product.precioCosto}</p>
-          <p><strong>Estado:</strong> ${product.activo ? "Activo" : "Inactivo"}</p>
-        </div>
-      `,
-      icon: "info",
-      confirmButtonText: "Cerrar",
+  const handleChangeStatusProduct = async (id: number) => {
+    const result = await Swal.fire({
+      title: `¿Desea cambiar el estado de este producto?`,
+      text: "Esta acción activará o desactivará el producto.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, cambiar estado",
+      cancelButtonText: "Cancelar",
     });
+
+    if (result.isConfirmed) {
+      try {
+        await putChangeProductStatus(id);
+        
+        Swal.fire({
+          title: "¡Actualizado!",
+          text: "El estado del producto ha sido cambiado.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        Swal.fire({
+          title: "Error",
+          text: "No se pudo cambiar el estado del producto.",
+          icon: "error",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    }
   };
 
   const getUnidadMedida = (unidadMedida: any): string => {
@@ -93,7 +108,7 @@ const SearchProductModal = ({ isOpen, onClose }: SearchProductModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-800">
@@ -152,7 +167,7 @@ const SearchProductModal = ({ isOpen, onClose }: SearchProductModalProps) => {
           )}
         </div>
 
-        {/* Results */}
+        {/* Results Table */}
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
@@ -172,73 +187,113 @@ const SearchProductModal = ({ isOpen, onClose }: SearchProductModalProps) => {
               <p>No se encontraron productos con "{activeSearch}"</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {productos.map((product: any) => (
-                <div
-                  key={product.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900">
-                          {product.nombre}
-                        </h3>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            product.activo
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-700"
-                          }`}
-                        >
-                          {product.activo ? "Activo" : "Inactivo"}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-600">
-                        <div>
-                          <span className="font-medium">Código:</span> {product.codigo}
-                        </div>
-                        <div>
-                          <span className="font-medium">Categoría:</span>{" "}
-                          {product.categoria?.nombre || "Sin categoría"}
-                        </div>
-                        <div>
-                          <span className="font-medium">Stock:</span>{" "}
-                          <span className={
-                            (product.stockActual?.cantidad || 0) > 10
-                              ? "text-green-600 font-medium"
-                              : "text-red-600 font-medium"
-                          }>
-                            {getUnidadMedida(product.unidadMedida)}{" "}
-                            {product.stockActual?.cantidad || 0}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-medium">Precio:</span> ${product.precioVenta}
-                        </div>
-                      </div>
-                    </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-300/70">
+                    <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
+                      ID
+                    </th>
+                    <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
+                      Nombre
+                    </th>
+                    <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
+                      Categoría
+                    </th>
+                    <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
+                      Stock
+                    </th>
+                    <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
+                      Precio Venta
+                    </th>
+                    <th className="text-left px-3 py-3 text-gray-800/80 font-medium">
+                      Precio Costo
+                    </th>
+                    <th className="text-left px-10 py-3 text-gray-800/80 font-medium">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productos.map((product: any, index: number) => (
+                    <tr
+                      key={product.id}
+                      className="border-b border-gray-300/70 hover:bg-gray-100/50"
+                    >
+                      <td className="px-3 py-3 text-gray-800/80 font-medium">
+                        {index + 1}
+                      </td>
+                      <td className="px-3 py-3 text-gray-800/80 font-medium">
+                        {product.nombre}
+                      </td>
+                      <td className="px-3 py-3 text-gray-800/80 font-medium">
+                        {product.categoria?.nombre || "Sin categoría"}
+                      </td>
+                      <td className={`px-3 py-3 font-medium ${
+                        (product.stockActual?.cantidad || 0) > 10 
+                          ? "text-green-800/80" 
+                          : "text-red-600/80"
+                      }`}>
+                        {getUnidadMedida(product.unidadMedida)}{" "}
+                        {product.stockActual?.cantidad || 0}
+                      </td>
+                      <td className="px-3 py-3 text-gray-800/80 font-medium">
+                        $ {product.precioVenta || 0}
+                      </td>
+                      <td className="px-3 py-3 text-gray-800/80 font-medium">
+                        $ {product.precioCosto || 0}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          {/* Botón Editar */}
+                          <button
+                            className="p-2 rounded-md hover:bg-gray-500/20 transition"
+                            onClick={() => handleEditProduct(product)}
+                            title="Editar producto"
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M14.672 6.763 5.58 15.854l-.166 2.995 2.995-.166L17.5 9.59m-2.828-2.828 1.348-1.349a2 2 0 1 1 2.829 2.829L17.5 9.59m-2.828-2.828L17.5 9.591"
+                                stroke="#070707"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
 
-                    <div className="flex items-center gap-2 ml-4">
-                      <button
-                        onClick={() => handleEditProduct(product)}
-                        className="p-2 rounded-md hover:bg-blue-100 transition"
-                        title="Editar producto"
-                      >
-                        <Edit className="w-5 h-5 text-blue-600" />
-                      </button>
-                      <button
-                        onClick={() => handleViewProduct(product)}
-                        className="p-2 rounded-md hover:bg-gray-200 transition"
-                        title="Ver detalles"
-                      >
-                        <Eye className="w-5 h-5 text-gray-600" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                          {/* Switch con animación */}
+                          <button
+                            onClick={() => handleChangeStatusProduct(product.id)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 ${
+                              product.activo
+                                ? "bg-gray-800/80 hover:bg-gray-800"
+                                : "bg-gray-300/70 hover:bg-gray-400/70"
+                            }`}
+                            title={
+                              product.activo
+                                ? "Desactivar producto"
+                                : "Activar producto"
+                            }
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                                product.activo ? "translate-x-6" : "translate-x-1"
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
