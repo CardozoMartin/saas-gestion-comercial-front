@@ -12,7 +12,7 @@ interface TableProductProps {
   hasNextPage: boolean;
   hasPrevPage: boolean;
   onPageChange: (page: number) => void;
-  params?: any; // Añadir params para pasarlos al hook
+  params?: any;
 }
 
 const TableProduct = ({
@@ -29,7 +29,6 @@ const TableProduct = ({
   const navigate = useNavigate();
   const taleProductos = Productos || [];
   
-  // Pasar params al hook para que la mutación tenga acceso a la queryKey correcta
   const { putChangeProductStatus } = useProduct(params);
 
   const handleEditClick = (product: any) => {
@@ -83,13 +82,16 @@ const TableProduct = ({
     return buttons;
   };
 
-  const getUnidadMedida = (id: number): string => {
+  // ⭐ Función mejorada con validación
+  const getUnidadMedida = (unidadMedida: any): string => {
+    if (!unidadMedida?.id) return "Un";
+    
     const unidades: Record<number, string> = {
       1: "Un",
       2: "Kg",
       4: "Lt",
     };
-    return unidades[id] || "Un";
+    return unidades[unidadMedida.id] || "Un";
   };
 
   const handleChangeStatusProduct = async (id: number) => {
@@ -106,7 +108,6 @@ const TableProduct = ({
 
     if (result.isConfirmed) {
       try {
-        // La mutación optimista actualiza la UI inmediatamente
         await putChangeProductStatus(id);
         
         Swal.fire({
@@ -117,11 +118,10 @@ const TableProduct = ({
           showConfirmButton: false,
         });
       } catch (error) {
-        // El error ya revirtió los cambios automáticamente
         Swal.fire({
-         title: "¡Actualizado!",
-          text: "El estado del producto ha sido cambiado.",
-          icon: "success",
+          title: "Error",
+          text: "No se pudo cambiar el estado del producto.",
+          icon: "error",
           timer: 1500,
           showConfirmButton: false,
         });
@@ -170,7 +170,7 @@ const TableProduct = ({
                     colSpan={7}
                     className="px-3 py-3 text-center text-gray-800/80 font-medium"
                   >
-                    No cargaste ningún producto aún.
+                    No se encontraron productos.
                   </td>
                 </tr>
               )}
@@ -189,22 +189,21 @@ const TableProduct = ({
                     {product.categoria?.nombre || "Sin categoría"}
                   </td>
 
-                  {(product.stockActual?.cantidad || 0) > 10 ? (
-                    <td className="px-3 py-3 text-green-800/80 font-medium">
-                      {getUnidadMedida(product.unidadMedida.id)}{" "}
-                      {product.stockActual?.cantidad || 0}
-                    </td>
-                  ) : (
-                    <td className="px-3 py-3 text-red-600/80 font-medium">
-                      {getUnidadMedida(product.unidadMedida.id)}{" "}
-                      {product.stockActual?.cantidad || 0}
-                    </td>
-                  )}
+                  {/* ⭐ Stock con validación mejorada */}
+                  <td className={`px-3 py-3 font-medium ${
+                    (product.stockActual?.cantidad || 0) > 10 
+                      ? "text-green-800/80" 
+                      : "text-red-600/80"
+                  }`}>
+                    {getUnidadMedida(product.unidadMedida)}{" "}
+                    {product.stockActual?.cantidad || 0}
+                  </td>
+
                   <td className="px-3 py-3 text-gray-800/80 font-medium">
-                    $ {product.precioVenta}
+                    $ {product.precioVenta || 0}
                   </td>
                   <td className="px-3 py-3 text-gray-800/80 font-medium">
-                    $ {product.precioCosto}
+                    $ {product.precioCosto || 0}
                   </td>
 
                   <td className="px-3 py-3">

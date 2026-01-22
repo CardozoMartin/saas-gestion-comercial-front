@@ -38,6 +38,14 @@ export const getProductAllFn = async ()=>{
         throw error;
     }
 }
+export const getProductByIdFn = async (id: number) => {
+    try {
+        const response = await api.get(`/productos/${id}/`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
 export const postProductFn = async (newProduct: Product) => {
     try {
         const response = await api.post("/productos/", newProduct);
@@ -85,6 +93,15 @@ export const getProductosForNameOrCodeFn = async (search: string) => {
         const response = await api.get('/productos/product/nameorcode', {
             params: { search }  // Se convierte en ?search=valor
         });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+export const obtenerProductoPorNombreOCodigoFn = async (nameorcode: string) => {
+    try {
+        const response = await api.get(`/productos/buscar/${nameorcode}`);
+        console.log(response.data)
         return response.data;
     } catch (error) {
         throw error;

@@ -1,4 +1,3 @@
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProductAllFn, getProductLowStockFn, getProductosForNameOrCodeFn, getProductsFn, patchUpdateProductStockFn, postProductFn, putChangeProductStatusFn, putProductFn } from "../api/products/apiProducts"
 
@@ -15,12 +14,21 @@ interface ProductsParams {
 export const useProduct = (params?: ProductsParams) => {
     const queryClient = useQueryClient()
 
+    // Query principal - SE DESACTIVA cuando hay búsqueda activa
     const { data, isLoading, isError } = useQuery<any>({
         queryKey: ['products', params],
-        queryFn: () => getProductsFn(params)
+        queryFn: () => getProductsFn(params),
+        enabled: !params?.search, // ⭐ Solo ejecutar si NO hay búsqueda
     })
 
-    //obtener los productos que estan bajo stock
+    // Query para búsqueda por nombre o codigo
+    const { data: productByNameOrCodeData, isLoading: isLoadingProductByNameOrCode, isError: isErrorProductByNameOrCode } = useQuery({
+        queryKey: ['productByNameOrCode', params?.search],
+        queryFn: () => getProductosForNameOrCodeFn(params?.search || ""),
+        enabled: !!params?.search, // ⭐ Solo ejecutar si HAY búsqueda
+    })
+
+    // Obtener los productos que están bajo stock
     const { data: lowStockProductsData, isLoading: isLoadingLowStockProducts, isError: isErrorLowStockProducts } = useQuery({
         queryKey: ['lowStockProducts'],
         queryFn: () => getProductLowStockFn(),
@@ -47,6 +55,7 @@ export const useProduct = (params?: ProductsParams) => {
         onSuccess: (data: any) => { 
             console.log("Producto creado exitosamente:", data)
             queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['productByNameOrCode'] })
         },
         onError: (error: any) => { 
             console.error("Error al crear producto:", error)
@@ -62,79 +71,106 @@ export const useProduct = (params?: ProductsParams) => {
         onSuccess: (data: any) => { 
             console.log("Producto actualizado exitosamente:", data)
             queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['productByNameOrCode'] })
         },
         onError: (error: any) => { 
             console.error("Error al actualizar producto:", error)
         }
     })
 
-    // MUTACIÓN CON ACTUALIZACIÓN
+    // ⭐ MUTACIÓN MEJORADA - Soporta búsqueda y paginación
     const { mutateAsync: putChangeProductStatus } = useMutation({
         mutationFn: putChangeProductStatusFn,
         
-        // Antes de la mutación - actualizar UI inmediatamente
         onMutate: async (productId: number) => {
-            // Cancelar cualquier refetch en progreso
-            await queryClient.cancelQueries({ queryKey: ['products'] })
+            // Determinar qué query actualizar según el contexto
+            const queryKeyProducts = ['products', params]
+            const queryKeySearch = ['productByNameOrCode', params?.search]
             
-            // Guardar estado anterior para rollback
-            const previousData = queryClient.getQueryData(['products', params])
+            // Cancelar refetches
+            await queryClient.cancelQueries({ queryKey: queryKeyProducts })
+            await queryClient.cancelQueries({ queryKey: queryKeySearch })
             
-            // Actualizar cache optimistamente
-            queryClient.setQueryData(['products', params], (old: any) => {
-                if (!old) return old
-                
-                // Si es array simple
-                if (Array.isArray(old)) {
-                    return old.map((product: any) => 
-                        product.id === productId 
-                            ? { ...product, activo: !product.activo }
-                            : product
-                    )
-                }
-                
-                // Si es objeto paginado
-                return {
-                    ...old,
-                    productos: old.productos.map((product: any) => 
-                        product.id === productId 
-                            ? { ...product, activo: !product.activo }
-                            : product
-                    )
-                }
-            })
+            // Guardar estados anteriores
+            const previousProducts = queryClient.getQueryData(queryKeyProducts)
+            const previousSearch = queryClient.getQueryData(queryKeySearch)
             
-            return { previousData }
+            // ⭐ Actualizar cache de BÚSQUEDA si está activa
+            if (params?.search && previousSearch) {
+                queryClient.setQueryData(queryKeySearch, (old: any) => {
+                    if (!old) return old
+                    
+                    return {
+                        ...old,
+                        data: old.data.map((product: any) => 
+                            product.id === productId 
+                                ? { ...product, activo: !product.activo }
+                                : product
+                        )
+                    }
+                })
+            }
+            
+            // ⭐ Actualizar cache de PRODUCTOS PAGINADOS si no hay búsqueda
+            if (!params?.search && previousProducts) {
+                queryClient.setQueryData(queryKeyProducts, (old: any) => {
+                    if (!old) return old
+                    
+                    // Si es array simple
+                    if (Array.isArray(old)) {
+                        return old.map((product: any) => 
+                            product.id === productId 
+                                ? { ...product, activo: !product.activo }
+                                : product
+                        )
+                    }
+                    
+                    // Si es objeto paginado
+                    return {
+                        ...old,
+                        productos: old.productos.map((product: any) => 
+                            product.id === productId 
+                                ? { ...product, activo: !product.activo }
+                                : product
+                        )
+                    }
+                })
+            }
+            
+            return { previousProducts, previousSearch }
         },
         
-        // Si hay éxito
         onSuccess: (data: any) => {
             console.log("Estado del producto cambiado exitosamente:", data)
         },
         
-        // Si hay error - revertir cambios
         onError: (error: any, _productId, context) => {
             console.error("Error al cambiar el estado del producto:", error)
             
-            // Revertir al estado anterior
-            if (context?.previousData) {
-                queryClient.setQueryData(['products', params], context.previousData)
+            // Revertir cambios
+            if (context?.previousProducts) {
+                queryClient.setQueryData(['products', params], context.previousProducts)
+            }
+            if (context?.previousSearch) {
+                queryClient.setQueryData(['productByNameOrCode', params?.search], context.previousSearch)
             }
         },
         
-        // Siempre ejecutar al final - sincronizar con servidor
         onSettled: () => {
+            // Invalidar ambas queries para sincronizar
             queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['productByNameOrCode'] })
         }
     })
 
-    //hook para acutalizar el stock de un producto
+    // Hook para actualizar el stock de un producto
     const usePatchUpdateProductStock = () => {
         return useMutation({
-            mutationFn:patchUpdateProductStockFn,
+            mutationFn: patchUpdateProductStockFn,
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['products'] });
                 queryClient.invalidateQueries({ queryKey: ['lowStockProducts'] });
+                queryClient.invalidateQueries({ queryKey: ['productByNameOrCode'] });
             },
             onError: (error) => {
                 console.error("Error al actualizar el stock del producto:", error);
@@ -142,10 +178,9 @@ export const useProduct = (params?: ProductsParams) => {
         });
     }
 
-    //hook para buscar un producto por nombre o codigo de query params
+    // Hook para buscar un producto por nombre o codigo
     const useGetProductsBySearch = (searchTerm: string) => {
         return useQuery({
-            
             queryKey: ['productsBySearch', searchTerm],
             queryFn: () => getProductosForNameOrCodeFn(searchTerm),
             enabled: !!searchTerm && searchTerm.length > 0,
@@ -179,6 +214,8 @@ export const useProduct = (params?: ProductsParams) => {
         isErrorLowStockProducts,
         usePatchUpdateProductStock,
         useGetProductsBySearch,
-
+        productByNameOrCodeData,
+        isLoadingProductByNameOrCode,
+        isErrorProductByNameOrCode,
     }
 }
