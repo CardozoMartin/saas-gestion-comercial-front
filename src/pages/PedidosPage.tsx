@@ -473,6 +473,9 @@ export default function CajaPage() {
                 <th className="text-right px-3 py-3 text-gray-800/80 font-medium">
                   Total
                 </th>
+                <th className="text-right px-3 py-3 text-gray-800/80 font-medium">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody>

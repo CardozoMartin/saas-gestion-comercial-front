@@ -18,14 +18,14 @@ export const useProduct = (params?: ProductsParams) => {
     const { data, isLoading, isError } = useQuery<any>({
         queryKey: ['products', params],
         queryFn: () => getProductsFn(params),
-        enabled: !params?.search, // ⭐ Solo ejecutar si NO hay búsqueda
+        enabled: !params?.search, 
     })
 
     // Query para búsqueda por nombre o codigo
     const { data: productByNameOrCodeData, isLoading: isLoadingProductByNameOrCode, isError: isErrorProductByNameOrCode } = useQuery({
         queryKey: ['productByNameOrCode', params?.search],
         queryFn: () => getProductosForNameOrCodeFn(params?.search || ""),
-        enabled: !!params?.search, // ⭐ Solo ejecutar si HAY búsqueda
+        enabled: !!params?.search, 
     })
 
     // Obtener los productos que están bajo stock
@@ -72,13 +72,15 @@ export const useProduct = (params?: ProductsParams) => {
             console.log("Producto actualizado exitosamente:", data)
             queryClient.invalidateQueries({ queryKey: ['products'] })
             queryClient.invalidateQueries({ queryKey: ['productByNameOrCode'] })
+            queryClient.invalidateQueries({ queryKey: ['lowStockProducts'] })
+            queryClient.invalidateQueries({ queryKey: ['allProducts'] })
         },
         onError: (error: any) => { 
             console.error("Error al actualizar producto:", error)
         }
     })
 
-    // ⭐ MUTACIÓN MEJORADA - Soporta búsqueda y paginación
+    //búsqueda y paginación
     const { mutateAsync: putChangeProductStatus } = useMutation({
         mutationFn: putChangeProductStatusFn,
         
@@ -95,7 +97,7 @@ export const useProduct = (params?: ProductsParams) => {
             const previousProducts = queryClient.getQueryData(queryKeyProducts)
             const previousSearch = queryClient.getQueryData(queryKeySearch)
             
-            // ⭐ Actualizar cache de BÚSQUEDA si está activa
+            //  Actualizar cache de BÚSQUEDA si está activa
             if (params?.search && previousSearch) {
                 queryClient.setQueryData(queryKeySearch, (old: any) => {
                     if (!old) return old
@@ -111,7 +113,7 @@ export const useProduct = (params?: ProductsParams) => {
                 })
             }
             
-            // ⭐ Actualizar cache de PRODUCTOS PAGINADOS si no hay búsqueda
+            // Actualizar cache de PRODUCTOS PAGINADOS si no hay búsqueda
             if (!params?.search && previousProducts) {
                 queryClient.setQueryData(queryKeyProducts, (old: any) => {
                     if (!old) return old

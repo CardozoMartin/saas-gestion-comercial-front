@@ -13,6 +13,7 @@ import { useSession } from "../store/useSession";
 import { useSale } from "../hooks/useSale";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSaleEdit } from "../store/useSaleEdit";
 
 interface Product {
   id: number;
@@ -39,7 +40,8 @@ const PointSale = () => {
   });
 
   const { allProductsData } = useProduct();
-  console.log("Productos obtenidos:", allProductsData);
+  const { saleEdit } = useSaleEdit()
+  console.log("saleEdit en PointSale:", saleEdit)
   const {
     cart,
     addToCart: addToCartStore,
@@ -53,10 +55,10 @@ const PointSale = () => {
 
   const cartItems = cart;
 
-  // 🔥 HOOK DEL ESCÁNER DE CÓDIGOS DE BARRAS
+  // HOOK DEL ESCÁNER DE CÓDIGOS DE BARRAS
   useBarcodeReader({
     onScan: (barcode) => {
-      console.log("🔍 Código escaneado:", barcode);
+     
       
       // Buscar el producto por código
       const producto = allProductsData?.find((p: any) => p.codigo.toLowerCase() === barcode.toLowerCase());
@@ -81,9 +83,9 @@ const PointSale = () => {
         });
       }
     },
-    minLength: 3, // Ajusta según el largo de tus códigos
-    timeout: 100, // Ajusta según la velocidad de tu escáner
-    enabled: !showModal && !showCuentaCorrienteModal, // Solo activo cuando no hay modales
+    minLength: 3,
+    timeout: 100, 
+    enabled: !showModal && !showCuentaCorrienteModal, 
   });
 
   // ATAJOS DE TECLADO

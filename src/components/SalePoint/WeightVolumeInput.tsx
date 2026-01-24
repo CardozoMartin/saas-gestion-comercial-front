@@ -1,4 +1,5 @@
 import { Scale, DollarSign } from "lucide-react";
+import { useState } from "react";
 
 interface WeightVolumeInputProps {
   inputType: "cantidad" | "monto";
@@ -23,6 +24,37 @@ const WeightVolumeInput = ({
   onCancel,
   onConfirm,
 }: WeightVolumeInputProps) => {
+  const [displayValue, setDisplayValue] = useState("");
+
+  // Formatea el valor ingresado dividiendo por 1000
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\D/g, ""); // Solo números
+    
+    if (rawValue === "") {
+      setDisplayValue("");
+      onInputValueChange("");
+      return;
+    }
+
+    // Convierte el valor a número y divide por 1000
+    const numericValue = parseInt(rawValue, 10);
+    const formattedValue = (numericValue / 1000).toFixed(3);
+    
+    setDisplayValue(rawValue);
+    onInputValueChange(formattedValue);
+  };
+
+  // Formatea el display agregando el punto decimal
+  const formatDisplay = (value: string) => {
+    if (!value) return "";
+    
+    // Asegura que tenga al menos 4 dígitos (000X)
+    const padded = value.padStart(4, "0");
+    
+    // Inserta el punto: 0600 -> 0.600
+    return padded.slice(0, -3) + "." + padded.slice(-3);
+  };
+
   return (
     <div className="space-y-2 mt-3 pt-3 border-t border-blue-200">
       {/* Selector de tipo */}
@@ -51,16 +83,27 @@ const WeightVolumeInput = ({
         </button>
       </div>
 
-      {/* Input */}
-      <input
-        type="number"
-        step="0.001"
-        value={inputValue}
-        onChange={(e) => onInputValueChange(e.target.value)}
-        placeholder={inputType === "cantidad" ? "0.500" : "200"}
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-        autoFocus
-      />
+      {/* Input con formato automático */}
+      <div className="relative">
+        <input
+          type="text"
+          inputMode="numeric"
+          value={displayValue}
+          onChange={handleInputChange}
+          placeholder="Ej: 600 = 0.600"
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          autoFocus
+        />
+        {displayValue && (
+          <div className="absolute right-3 top-2 text-xs text-gray-500">
+            = {formatDisplay(displayValue)} kg
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-500">
+        💡 Ingresa sin decimales: 600 = 0.600 kg, 6000 = 6.000 kg
+      </p>
 
       {/* Vista previa */}
       {productPreview && (

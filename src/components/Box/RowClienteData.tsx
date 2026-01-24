@@ -1,30 +1,49 @@
 
 
-interface RowClienteDataProps {
-  venta: {
+
+import { useSaleEdit } from "../../store/useSaleEdit";
+import { useNavigate } from 'react-router-dom';
+
+type Venta = {
+  id: number;
+  numeroVenta: string;
+  fechaVenta: string;
+  cliente: {
+    nombre: string;
+    apellido?: string;
+  } | null;
+  tipoVenta: "contado" | "transferencia" | "cuenta_corriente";
+  detalles: {
     id: number;
-    numeroVenta: string;
-    fechaVenta: string;
-    cliente: {
-        nombre: string;
-        apellido?: string;
-    } | null;
-    tipoVenta: "contado" | "transferencia" | "cuenta_corriente";
-    detalles: {
-        id: number;
-        producto: {
-            nombre: string;
-        };
-        cantidad: number;
-        unidadMedida: {
-            abreviatura: string;
-        };
-    }[];
-    total: string;
-  };
+    producto: { nombre: string };
+    cantidad: number;
+    unidadMedida: { abreviatura: string };
+  }[];
+  total: string;
+};
+
+interface RowClienteDataProps {
+  venta: Venta;
+  onEditSale?: (saleData: Venta) => void;
 }
 
-const RowClienteData = ({ venta }: RowClienteDataProps) => {
+const RowClienteData = ({ venta, onEditSale }: RowClienteDataProps) => {
+  const { setSaleEdit } = useSaleEdit();
+  const navigate = useNavigate()
+
+  const handleEditSale = (id: number) => {
+    console.log("Editar venta con ID:", id);
+    console.log("Datos completos de la venta:", venta);
+
+    // Guardar en el store la venta a editar
+    setSaleEdit(venta);
+
+    // Llamar a callback externo si existe
+    if (onEditSale) onEditSale(venta);
+
+    // Navegar a la vista de edición
+    navigate('/dashboard/ventas/editar');
+  }
   return (
     <tr
       key={venta.id}
@@ -81,6 +100,10 @@ const RowClienteData = ({ venta }: RowClienteDataProps) => {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}
+      </td>
+      <td className="px-3 py-3 text-right font-semibold text-gray-800">
+        <button className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+        onClick={() => handleEditSale(venta.id)}>Editar</button>
       </td>
     </tr>
   );

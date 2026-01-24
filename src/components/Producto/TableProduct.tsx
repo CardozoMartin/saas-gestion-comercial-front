@@ -82,17 +82,26 @@ const TableProduct = ({
     return buttons;
   };
 
-  // ⭐ Función mejorada con validación
-  const getUnidadMedida = (unidadMedida: any): string => {
-    if (!unidadMedida?.id) return "Un";
-    
-    const unidades: Record<number, string> = {
-      1: "Un",
-      2: "Kg",
-      4: "Lt",
-    };
-    return unidades[unidadMedida.id] || "Un";
+
+const formatStock = (cantidad: number | undefined | null, unidadMedidaId: number | undefined): string => {
+  const cantidadSegura = cantidad || 0;
+  
+  if (!unidadMedidaId) return `${cantidadSegura} Un`;
+  
+  const unidades: Record<number, { nombre: string; usarDecimales: boolean }> = {
+    1: { nombre: "Un", usarDecimales: false },
+    2: { nombre: "kg", usarDecimales: true },
+    4: { nombre: "Lt", usarDecimales: true },
   };
+
+  const unidad = unidades[unidadMedidaId] || { nombre: "Un", usarDecimales: false };
+  
+  if (unidad.usarDecimales) {
+    return `${Number(cantidadSegura).toFixed(3)} ${unidad.nombre}`;
+  }
+  
+  return `${Math.floor(cantidadSegura)} ${unidad.nombre}`;
+};
 
   const handleChangeStatusProduct = async (id: number) => {
     const result = await Swal.fire({
@@ -190,14 +199,16 @@ const TableProduct = ({
                   </td>
 
                   {/* ⭐ Stock con validación mejorada */}
-                  <td className={`px-3 py-3 font-medium ${
-                    (product.stockActual?.cantidad || 0) > 10 
-                      ? "text-green-800/80" 
-                      : "text-red-600/80"
-                  }`}>
-                    {getUnidadMedida(product.unidadMedida)}{" "}
-                    {product.stockActual?.cantidad || 0}
-                  </td>
+                 <td className={`px-3 py-3 font-medium ${
+  (product.stockActual?.cantidad || 0) > 10 
+    ? "text-green-800/80" 
+    : "text-red-600/80"
+}`}>
+  {formatStock(
+    product.stockActual?.cantidad || 0,
+    product.unidadMedida?.id
+  )}
+</td>
 
                   <td className="px-3 py-3 text-gray-800/80 font-medium">
                     $ {product.precioVenta || 0}

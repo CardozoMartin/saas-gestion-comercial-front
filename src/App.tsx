@@ -4,14 +4,15 @@ import { lazy, Suspense } from "react";
 import RoutesPublic from "./routes/RoutesPublic";
 import RoutesPrivate from "./routes/RoutesPrivate";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import SessionHandler from "./components/SessionHandler";
 import { ROLES } from "./config/permissions";
 
 // Solo cargar estas páginas críticas al inicio
 import LoginPage from "./pages/LoginPage";
 import DashboardLayout from "./pages/DashboardLayaout";
+import EditSalePage from "./pages/EditSalePage";
 
 // Lazy load del resto de páginas
-const DashboardHome = lazy(() => import("./pages/DashboardHome"));
 const ProductosPage = lazy(() => import("./pages/ProductosPage"));
 const FormProducto = lazy(() => import("./components/Producto/FormProducto"));
 const VentasPage = lazy(() => import("./pages/VentasPage"));
@@ -38,6 +39,9 @@ const LoadingFallback = () => (
 const App = () => {
   return (
     <BrowserRouter>
+      {/* Manejador de eventos de sesión global */}
+      <SessionHandler />
+      
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* Rutas públicas */}
@@ -49,7 +53,7 @@ const App = () => {
           {/* Rutas privadas */}
           <Route element={<RoutesPrivate />}>
             <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<DashboardHome />} />
+              <Route index element={<PointSale />} />
               
               <Route 
                 path="productos" 
@@ -76,6 +80,11 @@ const App = () => {
                     <VentasPage />
                   </ProtectedRoute>
                 } 
+              />
+
+              <Route 
+                path="ventas/editar" 
+                element={<EditSalePage />} 
               />
               
               <Route 
